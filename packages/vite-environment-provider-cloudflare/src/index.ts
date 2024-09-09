@@ -5,7 +5,7 @@ import { readFile } from 'node:fs/promises';
 import {
   DevEnvironment as ViteDevEnvironment,
   BuildEnvironment,
-  HotUpdateContext,
+  createIdResolver,
 } from 'vite';
 
 import { HotChannel, HotPayload, ResolvedConfig, Plugin } from 'vite';
@@ -103,8 +103,8 @@ export function cloudflareEnvironment(
           },
         };
       },
-      hotUpdate(ctx: HotUpdateContext) {
-        if (ctx.environment.name !== environmentName) {
+      hotUpdate(ctx) {
+        if (this.environment.name !== environmentName) {
           return;
         }
         if (ctx.file === resolvedWranglerConfigPath) {
@@ -156,6 +156,17 @@ async function createCloudflareDevEnvironment(
 ): Promise<DevEnvironment> {
   const { bindings: bindingsFromToml, ...optionsFromToml } =
     getOptionsFromWranglerConfig(cloudflareOptions.config!);
+
+  const esmResolveId = createIdResolver(config, {});
+
+  // for `require` calls we want a resolver that prioritized node/cjs modules
+  const cjsResolveId = createIdResolver(config, {
+    conditions: ['node'],
+    mainFields: ['main'],
+    webCompatible: false,
+    isRequire: true,
+    extensions: ['.cjs', '.cts', '.js', '.ts', '.tsx', '.json'],
+  });
 
   const mf = new Miniflare({
     modulesRoot: fileURLToPath(new URL('./', import.meta.url)),
@@ -224,41 +235,33 @@ async function createCloudflareDevEnvironment(
       fixedSpecifier = rawSpecifier;
 
       try {
-        let { id } = await devEnv.pluginContainer.resolveId(
-          fixedSpecifier,
-          referrer,
-          {
-            // The following is to let know `resolveId` if the import is actually a require
-            // https://github.com/vitejs/vite/blob/8851d9d1c97cdce0807edd45e33e70446e545956/packages/vite/src/node/plugins/resolve.ts#L228-L230
-            // (Note: I am not sure if this is actually making any difference ¯\_(ツ)_/¯)
-            custom: {
-              'node-resolve': { isRequire: resolveMethod === 'require' },
-            },
-          },
-        );
+        const resolveId =
+          resolveMethod === 'import' ? esmResolveId : cjsResolveId;
+        let resolvedId = await resolveId(devEnv, fixedSpecifier, referrer);
 
-        const resolvedId = id;
-
-        if (id.includes('?')) id = id.slice(0, id.lastIndexOf('?'));
+        if (resolvedId.includes('?'))
+          resolvedId = resolvedId.slice(0, resolvedId.lastIndexOf('?'));
 
         const redirectTo =
-          id !== rawSpecifier && id !== specifier ? id : undefined;
+          resolvedId !== rawSpecifier && resolvedId !== specifier
+            ? resolvedId
+            : undefined;
 
         if (redirectTo) {
           return new MiniflareResponse(null, {
-            headers: { location: id },
+            headers: { location: resolvedId },
             status: 301,
           });
         }
 
         // and we read the code from the resolved file
-        const code: string | null = await readFile(id, 'utf8').catch(
+        const code: string | null = await readFile(resolvedId, 'utf8').catch(
           () => null,
         );
 
         const notFound = !code;
 
-        const moduleInfo = await collectModuleInfo(code, id);
+        const moduleInfo = await collectModuleInfo(code, resolvedId);
 
         debugDumps.dumpModuleFallbackServiceLog({
           resolveMethod,
