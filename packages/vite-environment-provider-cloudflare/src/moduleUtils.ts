@@ -16,7 +16,7 @@ export async function collectModuleInfo(
 
   const cjsLexerResult = parse(moduleCode);
   for (const namedExport of cjsLexerResult.exports) {
-    namedExportsSet.add(namedExport)
+    namedExportsSet.add(namedExport);
   }
   for (const reExport of cjsLexerResult.reexports) {
     const reExportsPath = resolve(dirname(moduleFilePath), reExport);
@@ -38,7 +38,9 @@ export async function collectModuleInfo(
     }
   }
 
-  const namedExports = [...namedExportsSet];
+  const namedExports = [...namedExportsSet].filter(
+    namedExport => namedExport !== 'default',
+  );
 
   return {
     isCommonJS: true,
@@ -61,9 +63,19 @@ function isCommonJS(code: string): boolean {
     return true;
   }
 
-  const hasCjsExports =
-    /\b(module\.exports|exports\.[a-zA-Z_$][0-9a-zA-Z_$]*)\s*=/.test(code);
-  if (hasCjsExports) {
+  // the code has exports such as `exports.aaa = ...`
+  const hasDotCjsExports =
+    /\bmodule\.exports|exports\.[a-zA-Z_$][0-9a-zA-Z_$]*\s*=/.test(code);
+  if (hasDotCjsExports) {
+    return true;
+  }
+
+  // the code has exports such as `exports["aaa"] = ...`
+  const hasBracketsCjsExports =
+    /\bmodule\.exports|exports\[(['"])[a-zA-Z_$][0-9a-zA-Z_$]*\1\]\s*=/.test(
+      code,
+    );
+  if (hasBracketsCjsExports) {
     return true;
   }
 

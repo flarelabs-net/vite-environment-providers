@@ -44,7 +44,7 @@
     "node-fetch": "^3.3.2",
     "patch-package": "^8.0.0",
     "typescript": "^5.1.6",
-    "vite": "^6.0.0-alpha.18",
+    "vite": "^6.0.0-alpha.24",
     "vite-tsconfig-paths": "^4.2.1",
     "wrangler": "^3.57.2"
   },

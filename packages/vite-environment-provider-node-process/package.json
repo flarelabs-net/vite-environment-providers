@@ -26,6 +26,6 @@
     "typescript": "^5.1.6"
   },
   "peerDependencies": {
-    "vite": "^6.0.0-alpha.18"
+    "vite": "^6.0.0-alpha.24"
   }
 }
