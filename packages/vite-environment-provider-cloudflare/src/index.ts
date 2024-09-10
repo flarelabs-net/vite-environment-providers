@@ -165,7 +165,7 @@ async function createCloudflareDevEnvironment(
     mainFields: ['main'],
     webCompatible: false,
     isRequire: true,
-    extensions: ['.cjs', '.cts', '.js', '.ts', '.tsx', '.json'],
+    extensions: ['.cjs', '.cts', '.js', '.ts', '.jsx', '.tsx', '.json'],
   });
 
   const mf = new Miniflare({
