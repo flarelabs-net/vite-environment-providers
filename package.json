@@ -13,7 +13,8 @@
   "pnpm": {
     "overrides": {
       "workerd": "^1.20240729.0",
-      "@remix-run/dev": "npm:@dario-hacking/remix-run-dev@2.9.1-vite-env-4"
+      "@remix-run/dev": "npm:@dario-hacking/remix-run-dev@2.9.1-vite-env-5",
+      "vite": "https://pkg.pr.new/vite@main"
     }
   }
 }

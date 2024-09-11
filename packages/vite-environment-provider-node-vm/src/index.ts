@@ -5,6 +5,7 @@ import {
   type HotPayload,
   type ResolvedConfig,
   type Plugin,
+  type EnvironmentOptions,
 } from 'vite';
 
 import EventEmitter from 'node:events';
@@ -72,22 +73,18 @@ export function nodeVMEnvironment(
   ];
 }
 
-export function createNodeVmEnvironment() {
+export function createNodeVmEnvironment(): EnvironmentOptions {
   return {
+    // @ts-ignore
     metadata: { runtimeName },
+    consumer: 'server',
     dev: {
-      createEnvironment(
-        name: string,
-        config: ResolvedConfig,
-      ): Promise<DevEnvironment> {
+      createEnvironment(name, config) {
         return createNodeVmDevEnvironment(name, config);
       },
     },
     build: {
-      createEnvironment(
-        name: string,
-        config: ResolvedConfig,
-      ): Promise<BuildEnvironment> {
+      createEnvironment(name, config) {
         return createNodeVmBuildEnvironment(name, config);
       },
     },
