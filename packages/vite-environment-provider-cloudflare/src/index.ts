@@ -6,6 +6,7 @@ import {
   DevEnvironment as ViteDevEnvironment,
   BuildEnvironment,
   createIdResolver,
+  type EnvironmentOptions,
 } from 'vite';
 
 import { HotChannel, HotPayload, ResolvedConfig, Plugin } from 'vite';
@@ -117,22 +118,19 @@ export function cloudflareEnvironment(
 
 export function createCloudflareEnvironment(
   options: CloudflareEnvironmentOptions,
-) {
+): EnvironmentOptions {
   return {
+    // @ts-ignore
     metadata: { runtimeName },
+    consumer: 'server',
+    webCompatible: true,
     dev: {
-      createEnvironment(
-        name: string,
-        config: ResolvedConfig,
-      ): Promise<DevEnvironment> {
+      createEnvironment(name, config) {
         return createCloudflareDevEnvironment(name, config, options);
       },
     },
     build: {
-      createEnvironment(
-        name: string,
-        config: ResolvedConfig,
-      ): Promise<BuildEnvironment> {
+      createEnvironment(name, config) {
         return createCloudflareBuildEnvironment(name, config, options);
       },
     },

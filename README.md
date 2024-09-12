@@ -32,10 +32,6 @@ to install all the dependencies and build all the packages in this repository, t
 
 [Syncpack](https://jamiemason.github.io/syncpack/) can be used to find and fix dependency version mismatches. The most useful commands are `pnpm syncpack list-mismatches` and `pnpm syncpack fix-mismatches`.
 
-## Extra info
-
-- we patch the vite dependency (see: `patches/vite@6.0.0-alpha.18.patch`) because the Vite implementation lacks customization options in their resolver, this should hopefully get fixed soon: https://github.com/vitejs/vite/pull/16471#discussion_r1619160848
-
 ### Credits & References
 
 - [**Vite Environment API GitHub discussion**](https://github.com/vitejs/vite/discussions/16358)

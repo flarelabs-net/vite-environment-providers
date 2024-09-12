@@ -6,6 +6,7 @@ import {
   type HotPayload,
   type ResolvedConfig,
   type Plugin,
+  type EnvironmentOptions,
 } from 'vite';
 import { fileURLToPath } from 'node:url';
 import { spawn } from 'node:child_process';
@@ -36,14 +37,13 @@ export function nodeProcessEnvironment(environmentName: string): Plugin[] {
   ];
 }
 
-function createNodeProcessEnvironment() {
+function createNodeProcessEnvironment(): EnvironmentOptions {
   return {
+    // @ts-ignore
     metadata: { runtimeName },
+    consumer: 'server',
     dev: {
-      createEnvironment(
-        name: string,
-        config: ResolvedConfig,
-      ): Promise<DevEnvironment> {
+      createEnvironment(name, config) {
         return createNodeProcessDevEnvironment(name, config);
       },
     },
