@@ -7,7 +7,7 @@ settings:
 overrides:
   workerd: ^1.20240729.0
   '@remix-run/dev': npm:@dario-hacking/remix-run-dev@2.9.1-vite-env-5
-  vite: https://pkg.pr.new/vite@main
+  vite: 6.0.0-beta.0
 
 importers:
 
@@ -42,8 +42,8 @@ importers:
         specifier: ^3.20240129.3
         version: 3.20240725.0
       vite:
-        specifier: https://pkg.pr.new/vite@main
-        version: https://pkg.pr.new/vite@main(@types/node@20.12.7)
+        specifier: 6.0.0-beta.0
+        version: 6.0.0-beta.0(@types/node@20.12.7)
       wrangler:
         specifier: ^3.57.2
         version: 3.57.2(@cloudflare/workers-types@4.20240815.0)
@@ -83,7 +83,7 @@ importers:
         version: link:../../packages/vite-environment-provider-cloudflare
       '@remix-run/dev':
         specifier: npm:@dario-hacking/remix-run-dev@2.9.1-vite-env-5
-        version: '@dario-hacking/remix-run-dev@2.9.1-vite-env-5(@remix-run/react@2.8.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.4.5))(@types/node@20.12.7)(typescript@5.4.5)(vite@https://pkg.pr.new/vite@main(@types/node@20.12.7))(wrangler@3.57.2(@cloudflare/workers-types@4.20240815.0))'
+        version: '@dario-hacking/remix-run-dev@2.9.1-vite-env-5(@remix-run/react@2.8.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.4.5))(@types/node@20.12.7)(typescript@5.4.5)(vite@6.0.0-beta.0(@types/node@20.12.7))(wrangler@3.57.2(@cloudflare/workers-types@4.20240815.0))'
       '@remix-run/server-runtime':
         specifier: 2.8.0
         version: 2.8.0(typescript@5.4.5)
@@ -130,11 +130,11 @@ importers:
         specifier: ^5.1.6
         version: 5.4.5
       vite:
-        specifier: https://pkg.pr.new/vite@main
-        version: https://pkg.pr.new/vite@main(@types/node@20.12.7)
+        specifier: 6.0.0-beta.0
+        version: 6.0.0-beta.0(@types/node@20.12.7)
       vite-tsconfig-paths:
         specifier: ^4.2.1
-        version: 4.3.2(typescript@5.4.5)(vite@https://pkg.pr.new/vite@main(@types/node@20.12.7))
+        version: 4.3.2(typescript@5.4.5)(vite@6.0.0-beta.0(@types/node@20.12.7))
       wrangler:
         specifier: ^3.57.2
         version: 3.57.2(@cloudflare/workers-types@4.20240815.0)
@@ -168,7 +168,7 @@ importers:
         version: link:../../packages/vite-environment-provider-node-vm
       '@remix-run/dev':
         specifier: npm:@dario-hacking/remix-run-dev@2.9.1-vite-env-5
-        version: '@dario-hacking/remix-run-dev@2.9.1-vite-env-5(@remix-run/react@2.8.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.4.5))(@types/node@20.12.7)(typescript@5.4.5)(vite@https://pkg.pr.new/vite@main(@types/node@20.12.7))(wrangler@3.57.2(@cloudflare/workers-types@4.20240815.0))'
+        version: '@dario-hacking/remix-run-dev@2.9.1-vite-env-5(@remix-run/react@2.8.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.4.5))(@types/node@20.12.7)(typescript@5.4.5)(vite@6.0.0-beta.0(@types/node@20.12.7))(wrangler@3.57.2(@cloudflare/workers-types@4.20240815.0))'
       '@remix-run/server-runtime':
         specifier: 2.8.0
         version: 2.8.0(typescript@5.4.5)
@@ -212,11 +212,11 @@ importers:
         specifier: ^5.1.6
         version: 5.4.5
       vite:
-        specifier: https://pkg.pr.new/vite@main
-        version: https://pkg.pr.new/vite@main(@types/node@20.12.7)
+        specifier: 6.0.0-beta.0
+        version: 6.0.0-beta.0(@types/node@20.12.7)
       vite-tsconfig-paths:
         specifier: ^4.2.1
-        version: 4.3.2(typescript@5.4.5)(vite@https://pkg.pr.new/vite@main(@types/node@20.12.7))
+        version: 4.3.2(typescript@5.4.5)(vite@6.0.0-beta.0(@types/node@20.12.7))
 
   packages/vite-environment-provider-cloudflare:
     dependencies:
@@ -227,8 +227,8 @@ importers:
         specifier: ^3.20240129.3
         version: 3.20240725.0
       vite:
-        specifier: https://pkg.pr.new/vite@main
-        version: https://pkg.pr.new/vite@main(@types/node@20.12.7)
+        specifier: 6.0.0-beta.0
+        version: 6.0.0-beta.0(@types/node@20.12.7)
       wrangler:
         specifier: ^3.57.2
         version: 3.57.2(@cloudflare/workers-types@4.20240815.0)
@@ -258,8 +258,8 @@ importers:
         specifier: ^4.5.3
         version: 4.5.3
       vite:
-        specifier: https://pkg.pr.new/vite@main
-        version: https://pkg.pr.new/vite@main(@types/node@20.12.7)
+        specifier: 6.0.0-beta.0
+        version: 6.0.0-beta.0(@types/node@20.12.7)
     devDependencies:
       '@types/node':
         specifier: ^20.11.19
@@ -274,8 +274,8 @@ importers:
   packages/vite-environment-provider-node-vm:
     dependencies:
       vite:
-        specifier: https://pkg.pr.new/vite@main
-        version: https://pkg.pr.new/vite@main(@types/node@20.12.7)
+        specifier: 6.0.0-beta.0
+        version: 6.0.0-beta.0(@types/node@20.12.7)
     devDependencies:
       '@types/node':
         specifier: ^20.11.19
@@ -482,14 +482,13 @@ packages:
 
   '@dario-hacking/remix-run-dev@2.9.1-vite-env-5':
     resolution: {integrity: sha512-AVOrprssHCD2pVNHtjnTq3g9xRsq6o2NHgcTFF3R5qJCHRZAsVgVe9SVBI4BwI4oXep691d/2LRxBAWzEwoWtg==}
-    version: 2.9.1-vite-env-5
     engines: {node: '>=18.0.0'}
     hasBin: true
     peerDependencies:
       '@remix-run/react': ^2.9.1
       '@remix-run/serve': ^2.9.1
       typescript: ^5.1.0
-      vite: https://pkg.pr.new/vite@main
+      vite: 6.0.0-beta.0
       wrangler: ^3.28.2
     peerDependenciesMeta:
       '@remix-run/serve':
@@ -4290,16 +4289,14 @@ packages:
 
   vite-tsconfig-paths@4.3.2:
     resolution: {integrity: sha512-0Vd/a6po6Q+86rPlntHye7F31zA2URZMbH8M3saAZ/xR9QoGN/L21bxEGfXdWmFdNkqPpRdxFT7nmNe12e9/uA==}
-    version: 4.3.2
     peerDependencies:
-      vite: https://pkg.pr.new/vite@main
+      vite: 6.0.0-beta.0
     peerDependenciesMeta:
       vite:
         optional: true
 
-  vite@https://pkg.pr.new/vite@main:
-    resolution: {tarball: https://pkg.pr.new/vite@main}
-    version: 5.4.3
+  vite@6.0.0-beta.0:
+    resolution: {integrity: sha512-ziqwdNyPl/Azbp8R8yM1vFn9yWHyDJK8fqv4IWs4m3fgv1b9H4I7S++9fJNG/7qE8et2hpw4kMyrB8iNYOqRYw==}
     engines: {node: ^18.0.0 || >=20.0.0}
     hasBin: true
     peerDependencies:
@@ -4711,7 +4708,7 @@ snapshots:
     dependencies:
       '@jridgewell/trace-mapping': 0.3.9
 
-  '@dario-hacking/remix-run-dev@2.9.1-vite-env-5(@remix-run/react@2.8.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.4.5))(@types/node@20.12.7)(typescript@5.4.5)(vite@https://pkg.pr.new/vite@main(@types/node@20.12.7))(wrangler@3.57.2(@cloudflare/workers-types@4.20240815.0))':
+  '@dario-hacking/remix-run-dev@2.9.1-vite-env-5(@remix-run/react@2.8.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.4.5))(@types/node@20.12.7)(typescript@5.4.5)(vite@6.0.0-beta.0(@types/node@20.12.7))(wrangler@3.57.2(@cloudflare/workers-types@4.20240815.0))':
     dependencies:
       '@babel/core': 7.25.2
       '@babel/generator': 7.25.6
@@ -4769,7 +4766,7 @@ snapshots:
       ws: 7.5.10
     optionalDependencies:
       typescript: 5.4.5
-      vite: https://pkg.pr.new/vite@main(@types/node@20.12.7)
+      vite: 6.0.0-beta.0(@types/node@20.12.7)
       wrangler: 3.57.2(@cloudflare/workers-types@4.20240815.0)
     transitivePeerDependencies:
       - '@types/node'
@@ -5592,7 +5589,7 @@ snapshots:
       lodash: 4.17.21
       mlly: 1.7.1
       outdent: 0.8.0
-      vite: https://pkg.pr.new/vite@main(@types/node@20.12.7)
+      vite: 6.0.0-beta.0(@types/node@20.12.7)
       vite-node: 1.6.0(@types/node@20.12.7)
     transitivePeerDependencies:
       - '@types/node'
@@ -8955,7 +8952,7 @@ snapshots:
       debug: 4.3.4
       pathe: 1.1.2
       picocolors: 1.0.1
-      vite: https://pkg.pr.new/vite@main(@types/node@20.12.7)
+      vite: 6.0.0-beta.0(@types/node@20.12.7)
     transitivePeerDependencies:
       - '@types/node'
       - less
@@ -8967,18 +8964,18 @@ snapshots:
       - supports-color
       - terser
 
-  vite-tsconfig-paths@4.3.2(typescript@5.4.5)(vite@https://pkg.pr.new/vite@main(@types/node@20.12.7)):
+  vite-tsconfig-paths@4.3.2(typescript@5.4.5)(vite@6.0.0-beta.0(@types/node@20.12.7)):
     dependencies:
       debug: 4.3.4
       globrex: 0.1.2
       tsconfck: 3.0.3(typescript@5.4.5)
     optionalDependencies:
-      vite: https://pkg.pr.new/vite@main(@types/node@20.12.7)
+      vite: 6.0.0-beta.0(@types/node@20.12.7)
     transitivePeerDependencies:
       - supports-color
       - typescript
 
-  vite@https://pkg.pr.new/vite@main(@types/node@20.12.7):
+  vite@6.0.0-beta.0(@types/node@20.12.7):
     dependencies:
       esbuild: 0.21.5
       postcss: 8.4.45
