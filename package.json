@@ -2,7 +2,7 @@
   "name": "vite-environment-6.0.0-alpha-experimentations",
   "scripts": {
     "postinstall": "pnpm build:packages",
-    "build:packages": "pnpm --filter '@flarelabs-net/vite-environment-provider-cloudflare' --filter '@flarelabs-net/vite-environment-provider-node-process' --filter '@flarelabs-net/vite-environment-provider-node-vm' --sequential build",
+    "build:packages": "pnpm --filter '@flarelabs-net/*' --sequential build",
     "prettify": "prettier --ignore-path .gitignore --write ."
   },
   "license": "MIT",
