@@ -1,0 +1,21 @@
+{
+  "name": "cloudflare-dev-module-resolution-fixture",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "test": "vitest --run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@flarelabs-net/vite-environment-provider-cloudflare": "workspace:*",
+    "@types/react": "^18.3.1",
+    "miniflare": "^3.20240129.3",
+    "vite": "^5.4.4",
+    "vitest": "^2.1.0",
+    "wrangler": "^3.57.2",
+    "@cloudflare/workers-types": "^4.20240424.0",
+    "react": "^18.3.1",
+    "@remix-run/cloudflare": "2.12.0",
+    "typescript": "^5.1.6"
+  }
+}
