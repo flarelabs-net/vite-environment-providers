@@ -1,5 +1,4 @@
 import React, { version as ReactVersion } from 'react';
-import { json, createCookie } from '@remix-run/cloudflare';
 
 export default {
   async fetch(_request: Request, env: any) {
@@ -10,10 +9,21 @@ export default {
       reactVersionsMatch: React.version === ReactVersion,
 
       // resolving imports from @remix-run/cloudflare
+      ...(await getRemixRunCloudflareValues()),
+    });
+  },
+};
+
+async function getRemixRunCloudflareValues() {
+  try {
+    const { json, createCookie } = await import('@remix-run/cloudflare');
+    return {
       'type of remix cloudflare json({})': typeof json({}),
       remixRunCloudflareCookieName: createCookie(
         'my-remix-run-cloudflare-cookie',
       ).name,
-    });
-  },
-};
+    };
+  } catch {
+    return {};
+  }
+}

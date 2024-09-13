@@ -11,7 +11,7 @@ const runName = `dev_run_${runNumber}`;
 export const runDir = `${runsDir}/${runName}`;
 const allImportsFilePath = `${runDir}/all-imports.txt`;
 
-export const debugDumpsEnabled = !!process.env['DEBUG_DUMPS'];
+export const debugDumpsEnabled = true; //!!process.env['DEBUG_DUMPS'];
 
 if (debugDumpsEnabled) {
   await mkdir(runDir, { recursive: true });
