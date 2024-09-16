@@ -51,14 +51,14 @@ importers:
   examples/remix-app-cloudflare:
     dependencies:
       '@remix-run/cloudflare':
-        specifier: 2.8.0
-        version: 2.8.0(@cloudflare/workers-types@4.20240815.0)(typescript@5.4.5)
+        specifier: 2.9.1
+        version: 2.9.1(@cloudflare/workers-types@4.20240815.0)(typescript@5.4.5)
       '@remix-run/node':
-        specifier: 2.8.0
-        version: 2.8.0(typescript@5.4.5)
+        specifier: 2.9.1
+        version: 2.9.1(typescript@5.4.5)
       '@remix-run/react':
-        specifier: 2.8.0
-        version: 2.8.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.4.5)
+        specifier: 2.9.1
+        version: 2.9.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.4.5)
       cookie:
         specifier: ^0.6.0
         version: 0.6.0
@@ -83,10 +83,10 @@ importers:
         version: link:../../packages/vite-environment-provider-cloudflare
       '@remix-run/dev':
         specifier: npm:@dario-hacking/remix-run-dev@2.9.1-vite-env-6
-        version: '@dario-hacking/remix-run-dev@2.9.1-vite-env-6(@remix-run/react@2.8.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.4.5))(@types/node@20.12.7)(typescript@5.4.5)(vite@6.0.0-beta.0(@types/node@20.12.7))(wrangler@3.57.2(@cloudflare/workers-types@4.20240815.0))'
+        version: '@dario-hacking/remix-run-dev@2.9.1-vite-env-6(@remix-run/react@2.9.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.4.5))(@types/node@20.12.7)(typescript@5.4.5)(vite@6.0.0-beta.0(@types/node@20.12.7))(wrangler@3.57.2(@cloudflare/workers-types@4.20240815.0))'
       '@remix-run/server-runtime':
-        specifier: 2.8.0
-        version: 2.8.0(typescript@5.4.5)
+        specifier: 2.9.1
+        version: 2.9.1(typescript@5.4.5)
       '@types/react':
         specifier: ^18.2.20
         version: 18.3.1
@@ -142,11 +142,11 @@ importers:
   examples/remix-app-node-vm:
     dependencies:
       '@remix-run/node':
-        specifier: 2.8.0
-        version: 2.8.0(typescript@5.4.5)
+        specifier: 2.9.1
+        version: 2.9.1(typescript@5.4.5)
       '@remix-run/react':
-        specifier: 2.8.0
-        version: 2.8.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.4.5)
+        specifier: 2.9.1
+        version: 2.9.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.4.5)
       cookie:
         specifier: ^0.6.0
         version: 0.6.0
@@ -168,10 +168,10 @@ importers:
         version: link:../../packages/vite-environment-provider-node-vm
       '@remix-run/dev':
         specifier: npm:@dario-hacking/remix-run-dev@2.9.1-vite-env-6
-        version: '@dario-hacking/remix-run-dev@2.9.1-vite-env-6(@remix-run/react@2.8.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.4.5))(@types/node@20.12.7)(typescript@5.4.5)(vite@6.0.0-beta.0(@types/node@20.12.7))(wrangler@3.57.2(@cloudflare/workers-types@4.20240815.0))'
+        version: '@dario-hacking/remix-run-dev@2.9.1-vite-env-6(@remix-run/react@2.9.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.4.5))(@types/node@20.12.7)(typescript@5.4.5)(vite@6.0.0-beta.0(@types/node@20.12.7))(wrangler@3.57.2(@cloudflare/workers-types@4.20240815.0))'
       '@remix-run/server-runtime':
-        specifier: 2.8.0
-        version: 2.8.0(typescript@5.4.5)
+        specifier: 2.9.1
+        version: 2.9.1(typescript@5.4.5)
       '@types/react':
         specifier: ^18.2.20
         version: 18.3.1
@@ -230,8 +230,8 @@ importers:
         specifier: 2.12.0
         version: 2.12.0(@cloudflare/workers-types@4.20240815.0)(typescript@5.4.5)
       '@remix-run/server-runtime':
-        specifier: 2.9.1
-        version: 2.9.1(typescript@5.4.5)
+        specifier: 2.12.0
+        version: 2.12.0(typescript@5.4.5)
       '@types/react':
         specifier: ^18.3.1
         version: 18.3.1
@@ -1209,20 +1209,11 @@ packages:
       typescript:
         optional: true
 
-  '@remix-run/cloudflare@2.8.0':
-    resolution: {integrity: sha512-8CvSwBAdfDC6W3UmmV+FTUlQYVzCcFCyczIUzQBNYE86YxGXdavxSPCOBV8vWrAUaIuwxwQMdfFZovDwqg9P2Q==}
+  '@remix-run/cloudflare@2.9.1':
+    resolution: {integrity: sha512-k7HQh1hvMD6Zs4tPBT9+ZRZIB9frf0kyA1C+A8unUFFJXRqmUbsrLblGnrrlF6POSzRsdIkb4OeECYL5NYlNDw==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
       '@cloudflare/workers-types': ^4.0.0
-      typescript: ^5.1.0
-    peerDependenciesMeta:
-      typescript:
-        optional: true
-
-  '@remix-run/node@2.8.0':
-    resolution: {integrity: sha512-UGAckayyhw14v70O1Lcf75Nr/ipLOG5e20tMiMee96sCXWaHGHpv9VbAVoDXiVKqI3sw4dJarNc0qo794zwAbg==}
-    engines: {node: '>=18.0.0'}
-    peerDependencies:
       typescript: ^5.1.0
     peerDependenciesMeta:
       typescript:
@@ -1237,8 +1228,8 @@ packages:
       typescript:
         optional: true
 
-  '@remix-run/react@2.8.0':
-    resolution: {integrity: sha512-QDbdAFOPssVGIlT1Klp/GiS6Sbkmwn9e2tJXXtPwchLCePGCnIlJXtBe/jokFBwcG8ce+oTRzSVmJ75kEEahZA==}
+  '@remix-run/react@2.9.1':
+    resolution: {integrity: sha512-QQVZPS56okvDF3FBuGBjyKuYa6bXZvXFFlYeWfngI8ZnDbCzQLKV1oD0FWMhKuQxMaKs25uWg2YwGqwWTdin3w==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
       react: ^18.0.0
@@ -1247,10 +1238,6 @@ packages:
     peerDependenciesMeta:
       typescript:
         optional: true
-
-  '@remix-run/router@1.15.2':
-    resolution: {integrity: sha512-+Rnav+CaoTE5QJc4Jcwh5toUpnVLKYbpU6Ys0zqbakqbaLQHeglLVHPfxOiQqdNmUy5C2lXz5dwC6tQNX2JW2Q==}
-    engines: {node: '>=14.0.0'}
 
   '@remix-run/router@1.16.0':
     resolution: {integrity: sha512-Quz1KOffeEf/zwkCBM3kBtH4ZoZ+pT3xIXBG4PPW/XFtDP7EGhtTiC2+gpL9GnR7+Qdet5Oa6cYSvwKYg6kN9Q==}
@@ -1262,15 +1249,6 @@ packages:
 
   '@remix-run/server-runtime@2.12.0':
     resolution: {integrity: sha512-o9ukOr3XKmyY8UufTrDdkgD3fiy+z+f4qEzvCQnvC0+EasCyN9hb1Vbui6Koo/5HKvahC4Ga8RcWyvhykKrG3g==}
-    engines: {node: '>=18.0.0'}
-    peerDependencies:
-      typescript: ^5.1.0
-    peerDependenciesMeta:
-      typescript:
-        optional: true
-
-  '@remix-run/server-runtime@2.8.0':
-    resolution: {integrity: sha512-bb6rRefxEqA1fHGUo2i2s1uMztYqQlxupVCVsAs+sUkzTXtORJW+b0oFIKf5yWyaarBJ4zeLyoPsAMBqVX8P3w==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
       typescript: ^5.1.0
@@ -3765,15 +3743,15 @@ packages:
     resolution: {integrity: sha512-jCvmsr+1IUSMUyzOkRcvnVbX3ZYC6g9TDrDbFuFmRDq7PD4yaGbLKNQL6k2jnArV8hjYxh7hVhAZB6s9HDGpZA==}
     engines: {node: '>=0.10.0'}
 
-  react-router-dom@6.22.2:
-    resolution: {integrity: sha512-WgqxD2qySEIBPZ3w0sHH+PUAiamDeszls9tzqMPBDA1YYVucTBXLU7+gtRfcSnhe92A3glPnvSxK2dhNoAVOIQ==}
+  react-router-dom@6.23.0:
+    resolution: {integrity: sha512-Q9YaSYvubwgbal2c9DJKfx6hTNoBp3iJDsl+Duva/DwxoJH+OTXkxGpql4iUK2sla/8z4RpjAm6EWx1qUDuopQ==}
     engines: {node: '>=14.0.0'}
     peerDependencies:
       react: '>=16.8'
       react-dom: '>=16.8'
 
-  react-router@6.22.2:
-    resolution: {integrity: sha512-YD3Dzprzpcq+tBMHBS822tCjnWD3iIZbTeSXMY9LPSG541EfoBGyZ3bS25KEnaZjLcmQpw2AVLkFyfgXY8uvcw==}
+  react-router@6.23.0:
+    resolution: {integrity: sha512-wPMZ8S2TuPadH0sF5irFGjkNLIcRvOSaEe7v+JER8508dyJumm6XZB1u5kztlX0RVq6AzRVndzqcUh6sFIauzA==}
     engines: {node: '>=14.0.0'}
     peerDependencies:
       react: '>=16.8'
@@ -4883,7 +4861,7 @@ snapshots:
     dependencies:
       '@jridgewell/trace-mapping': 0.3.9
 
-  '@dario-hacking/remix-run-dev@2.9.1-vite-env-6(@remix-run/react@2.8.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.4.5))(@types/node@20.12.7)(typescript@5.4.5)(vite@6.0.0-beta.0(@types/node@20.12.7))(wrangler@3.57.2(@cloudflare/workers-types@4.20240815.0))':
+  '@dario-hacking/remix-run-dev@2.9.1-vite-env-6(@remix-run/react@2.9.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.4.5))(@types/node@20.12.7)(typescript@5.4.5)(vite@6.0.0-beta.0(@types/node@20.12.7))(wrangler@3.57.2(@cloudflare/workers-types@4.20240815.0))':
     dependencies:
       '@babel/core': 7.25.2
       '@babel/generator': 7.25.6
@@ -4896,7 +4874,7 @@ snapshots:
       '@mdx-js/mdx': 2.3.0
       '@npmcli/package-json': 4.0.1
       '@remix-run/node': 2.9.1(typescript@5.4.5)
-      '@remix-run/react': 2.8.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.4.5)
+      '@remix-run/react': 2.9.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.4.5)
       '@remix-run/router': 1.16.0
       '@remix-run/server-runtime': 2.9.1(typescript@5.4.5)
       '@types/mdx': 2.0.13
@@ -5398,24 +5376,11 @@ snapshots:
     optionalDependencies:
       typescript: 5.4.5
 
-  '@remix-run/cloudflare@2.8.0(@cloudflare/workers-types@4.20240815.0)(typescript@5.4.5)':
+  '@remix-run/cloudflare@2.9.1(@cloudflare/workers-types@4.20240815.0)(typescript@5.4.5)':
     dependencies:
       '@cloudflare/kv-asset-handler': 0.1.3
       '@cloudflare/workers-types': 4.20240815.0
-      '@remix-run/server-runtime': 2.8.0(typescript@5.4.5)
-    optionalDependencies:
-      typescript: 5.4.5
-
-  '@remix-run/node@2.8.0(typescript@5.4.5)':
-    dependencies:
-      '@remix-run/server-runtime': 2.8.0(typescript@5.4.5)
-      '@remix-run/web-fetch': 4.4.2
-      '@remix-run/web-file': 3.1.0
-      '@remix-run/web-stream': 1.1.0
-      '@web3-storage/multipart-parser': 1.0.0
-      cookie-signature: 1.2.1
-      source-map-support: 0.5.21
-      stream-slice: 0.1.2
+      '@remix-run/server-runtime': 2.9.1(typescript@5.4.5)
     optionalDependencies:
       typescript: 5.4.5
 
@@ -5431,18 +5396,17 @@ snapshots:
     optionalDependencies:
       typescript: 5.4.5
 
-  '@remix-run/react@2.8.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.4.5)':
+  '@remix-run/react@2.9.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.4.5)':
     dependencies:
-      '@remix-run/router': 1.15.2
-      '@remix-run/server-runtime': 2.8.0(typescript@5.4.5)
+      '@remix-run/router': 1.16.0
+      '@remix-run/server-runtime': 2.9.1(typescript@5.4.5)
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
-      react-router: 6.22.2(react@18.3.1)
-      react-router-dom: 6.22.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      react-router: 6.23.0(react@18.3.1)
+      react-router-dom: 6.23.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      turbo-stream: 2.4.1
     optionalDependencies:
       typescript: 5.4.5
-
-  '@remix-run/router@1.15.2': {}
 
   '@remix-run/router@1.16.0': {}
 
@@ -5457,17 +5421,6 @@ snapshots:
       set-cookie-parser: 2.6.0
       source-map: 0.7.4
       turbo-stream: 2.4.0
-    optionalDependencies:
-      typescript: 5.4.5
-
-  '@remix-run/server-runtime@2.8.0(typescript@5.4.5)':
-    dependencies:
-      '@remix-run/router': 1.15.2
-      '@types/cookie': 0.6.0
-      '@web3-storage/multipart-parser': 1.0.0
-      cookie: 0.6.0
-      set-cookie-parser: 2.6.0
-      source-map: 0.7.4
     optionalDependencies:
       typescript: 5.4.5
 
@@ -8409,16 +8362,16 @@ snapshots:
 
   react-refresh@0.14.2: {}
 
-  react-router-dom@6.22.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
+  react-router-dom@6.23.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
-      '@remix-run/router': 1.15.2
+      '@remix-run/router': 1.16.0
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
-      react-router: 6.22.2(react@18.3.1)
+      react-router: 6.23.0(react@18.3.1)
 
-  react-router@6.22.2(react@18.3.1):
+  react-router@6.23.0(react@18.3.1):
     dependencies:
-      '@remix-run/router': 1.15.2
+      '@remix-run/router': 1.16.0
       react: 18.3.1
 
   react@18.3.1:
