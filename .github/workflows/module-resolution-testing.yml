@@ -1,9 +1,6 @@
 name: Testing Module Resolution
 
-on:
-  push:
-    branches:
-      - module-resolution-testing
+on: push
 
 jobs:
   run-module-resolution-tests:
