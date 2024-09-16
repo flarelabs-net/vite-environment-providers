@@ -210,18 +210,41 @@ async function createCloudflareDevEnvironment(
       }
 
       const url = new URL(request.url);
-      const specifier = url.searchParams.get('specifier');
+      let specifier = url.searchParams.get('specifier');
       if (!specifier) {
         throw new Error('no specifier provided');
       }
 
+      const originalSpecifier = specifier;
+
       const rawSpecifier = url.searchParams.get('rawSpecifier');
 
-      const referrer = url.searchParams.get('referrer');
+      let referrer = url.searchParams.get('referrer');
 
       await debugDumps.rawLog(`
-        🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩
-        moduleFallback start:
+        moduleFallback start (pre windows fix):
+          resolveMethod = ${resolveMethod}
+          rawSpecifier = ${rawSpecifier}
+          referrer = ${referrer}
+          specifier = ${specifier}
+      `);
+
+      if (process.platform === 'win32') {
+        function fixWindowsPath(path: string) {
+          const windowsAbsMatch = path.match(/^\/[A-Z]:\/[a-z]\//);
+          if (windowsAbsMatch?.length !== 1) return path;
+          const lastIndex = path.lastIndexOf(windowsAbsMatch[0]);
+          if (lastIndex <= 0) return path.slice(1);
+
+          return path.slice(lastIndex + 1);
+        }
+
+        specifier = fixWindowsPath(specifier);
+        referrer = fixWindowsPath(referrer);
+      }
+
+      await debugDumps.rawLog(`
+        moduleFallback start (post windows fix):
           resolveMethod = ${resolveMethod}
           rawSpecifier = ${rawSpecifier}
           referrer = ${referrer}
@@ -284,16 +307,18 @@ async function createCloudflareDevEnvironment(
         // on windows absolute paths start with a letter and a colon, but we need assume that they start with `/`
         // when absolute to match the workerd specifiers (is this a bug in workerd?), so if we're on windows and
         // get such a path here we prepend it with a `/` to makes it look like an absolute path
-        const resolvedIdWindowsFixed =
-          process.platform === 'win32' && resolvedId.match(/^[A-Z]:/)
-            ? `/${resolvedId}`
-            : resolvedId;
+        // const resolvedIdWindowsFixed =
+        //   process.platform === 'win32' && resolvedId.match(/^[A-Z]:/)
+        //     ? `/${resolvedId}`
+        //     : resolvedId;
         const redirectTo =
           !rawSpecifier.startsWith('./') &&
           !rawSpecifier.startsWith('../') &&
-          resolvedIdWindowsFixed !== rawSpecifier &&
-          resolvedIdWindowsFixed !== specifier
-            ? resolvedId
+          resolvedId !== rawSpecifier &&
+          resolvedId !== specifier
+            ? // resolvedIdWindowsFixed !== rawSpecifier &&
+              // resolvedIdWindowsFixed !== specifier
+              resolvedId
             : undefined;
 
         if (redirectTo) {
@@ -302,7 +327,6 @@ async function createCloudflareDevEnvironment(
               redirectTo = ${redirectTo}
 
               resolvedId = ${resolvedId}
-              resolvedIdWindowsFixed = ${resolvedIdWindowsFixed}
               rawSpecifier = ${rawSpecifier}
               specifier = ${specifier}
           `);
@@ -351,13 +375,13 @@ async function createCloudflareDevEnvironment(
 
         await debugDumps.rawLog(`
               returning module
-                name = specifier.replace(/^\//, '')
+                name = ${originalSpecifier.replace(/^\//, '')}
                 isCommonJs = ${moduleInfo.isCommonJS}
             `);
 
         return new MiniflareResponse(
           JSON.stringify({
-            name: specifier.replace(/^\//, ''),
+            name: originalSpecifier.replace(/^\//, ''),
             ...mod,
           }),
         );
