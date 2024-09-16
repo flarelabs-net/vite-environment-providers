@@ -221,17 +221,8 @@ async function createCloudflareDevEnvironment(
       let referrer = url.searchParams.get('referrer');
 
       if (process.platform === 'win32') {
-        function fixWindowsPath(path: string) {
-          const windowsAbsMatch = path.match(/^\/[A-Z]:\/[a-z]\//);
-          if (windowsAbsMatch?.length !== 1) return path;
-          const lastIndex = path.lastIndexOf(windowsAbsMatch[0]);
-          if (lastIndex <= 0) return path.slice(1);
-
-          return path.slice(lastIndex + 1);
-        }
-
-        specifier = fixWindowsPath(specifier);
-        referrer = fixWindowsPath(referrer);
+        specifier = fixWindowsWorkerdAbsolutePath(specifier);
+        referrer = fixWindowsWorkerdAbsolutePath(referrer);
       }
 
       const referrerDir = dirname(referrer);
@@ -460,4 +451,40 @@ function getApproximateSpecifier(target: string, referrerDir: string): string {
   if (/^(node|cloudflare|workerd):/.test(target)) result = target;
   result = relative(referrerDir, target);
   return result;
+}
+
+/**
+ * Fixes paths that we received on windows in the module fallback callback that are incorrect.
+ *
+ * Such incorrect paths get generated (only on windows, and I've only tested this with pnpm) when there is
+ * a redirection, in such case the paths that we get from workerd will contain an incorrect prefix plus the
+ * actual correct path. So what we need to do is remove the incorrect prefix.
+ *
+ * This function fixes such paths by checking if the are absolute, (e.g. they start with something like `/D:/a/'),
+ * searches for the last occurrence of the disk absolute location (e.g. `/D:/a/`) and takes that substring starting
+ * from such location as the fixed path.
+ *
+ * This function also removes the leading `/` from its result since that is something that workerd adds/expects but
+ * not something that windows uses/works with.
+ *
+ * @example
+ *  This is an example of an incorrect path:
+ *    We have `rawSpecifier` set to `@remix-run/server-runtime` and we redirect to
+ *     `D:/a/vite-environment-providers/vite-environment-providers/node_modules/.pnpm/@remix-run+server-runtime@2.12.0_typescript@5.4.5/node_modules/@remix-run/server-runtime/dist/index.js`
+ *    On the next module fallback callback call we get such `specifier`:
+ *        `/D:/a/vite-environment-providers/vite-environment-providers/node_modules/.pnpm/@remix-run+cloudflare@2.12.0_@cloudflare+workers-types@4.20240815.0_typescript@5.4.5/node_modules/@remix-run/cloudflare/dist/@remix-run/D:/a/vite-environment-providers/vite-environment-providers/node_modules/.pnpm/@remix-run+server-runtime@2.12.0_typescript@5.4.5/node_modules/@remix-run/server-runtime/dist/index.js`
+ *    of which only want the last portion is correct (I am not sure how the initial portion is generated, it seems to be a combination of the previous module fallback values)
+ *
+ * TODO: create a proper minimal reproduction and open an issue in the workerd repository for this
+ *
+ * @param path the incorrect path received by workerd
+ * @returns the path to be used in the module fallback service callback
+ */
+function fixWindowsWorkerdAbsolutePath(path: string): string {
+  const windowsAbsMatch = path.match(/^\/[A-Z]:\/[a-z]\//);
+  if (windowsAbsMatch?.length !== 1) return path;
+  const lastIndex = path.lastIndexOf(windowsAbsMatch[0]);
+  if (lastIndex <= 0) return path.slice(1);
+
+  return path.slice(lastIndex + 1);
 }
