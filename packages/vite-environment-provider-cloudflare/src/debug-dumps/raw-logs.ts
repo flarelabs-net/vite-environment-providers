@@ -11,8 +11,6 @@ let idx = 0;
 
 export async function rawLog(toLog: unknown) {
   if (!debugDumpsEnabled) return;
-  // I get logs too large to be diffed... so let's limit this
-  if (idx > 225) return;
 
   const separator = new Array(3)
     .fill(null)
@@ -21,6 +19,6 @@ export async function rawLog(toLog: unknown) {
 
   await appendFile(
     __rawLogsFilePath,
-    `\n\n\n__rawLog(${idx++})\n${separator}\n\n\n${toLog}\n\n\n${separator}\n\n\n`,
+    `\n__rawLog(${idx++})\n${separator}\n${toLog}\n${separator}\n`,
   );
 }

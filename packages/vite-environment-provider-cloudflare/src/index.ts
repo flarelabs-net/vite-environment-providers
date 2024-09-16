@@ -1,6 +1,5 @@
 import { fileURLToPath } from 'node:url';
 import { dirname, relative, resolve, normalize } from 'node:path';
-import { readFile } from 'node:fs/promises';
 
 import {
   DevEnvironment as ViteDevEnvironment,
@@ -25,7 +24,7 @@ import {
 
 import * as debugDumps from './debug-dumps';
 import { collectModuleInfo } from './moduleUtils';
-import { readFileSync } from 'node:fs';
+import { readFile } from 'node:fs/promises';
 
 export type DevEnvironment = ViteDevEnvironment & {
   metadata: EnvironmentMetadata;
@@ -221,14 +220,6 @@ async function createCloudflareDevEnvironment(
 
       let referrer = url.searchParams.get('referrer');
 
-      await debugDumps.rawLog(`
-        moduleFallback start (pre windows fix):
-          resolveMethod = ${resolveMethod}
-          rawSpecifier = ${rawSpecifier}
-          referrer = ${referrer}
-          specifier = ${specifier}
-      `);
-
       if (process.platform === 'win32') {
         function fixWindowsPath(path: string) {
           const windowsAbsMatch = path.match(/^\/[A-Z]:\/[a-z]\//);
@@ -242,14 +233,6 @@ async function createCloudflareDevEnvironment(
         specifier = fixWindowsPath(specifier);
         referrer = fixWindowsPath(referrer);
       }
-
-      await debugDumps.rawLog(`
-        moduleFallback start (post windows fix):
-          resolveMethod = ${resolveMethod}
-          rawSpecifier = ${rawSpecifier}
-          referrer = ${referrer}
-          specifier = ${specifier}
-      `);
 
       const referrerDir = dirname(referrer);
 
@@ -265,129 +248,69 @@ async function createCloudflareDevEnvironment(
 
       fixedSpecifier = rawSpecifier;
 
-      try {
-        const resolveId =
-          resolveMethod === 'import' ? esmResolveId : cjsResolveId;
+      const resolveId =
+        resolveMethod === 'import' ? esmResolveId : cjsResolveId;
 
-        await debugDumps.rawLog(`
-          pre resolveId:
-            resolveMethod = ${resolveMethod}
-            rawSpecifier = ${rawSpecifier}
-            referred = ${referrer}
-        `);
+      let resolvedId = await resolveId(devEnv, fixedSpecifier, referrer);
 
-        let resolvedId = await resolveId(devEnv, fixedSpecifier, referrer);
-
-        // on windows resolveId doesn't seem to resolve well with relative imports, so if the
-        // rawSpecifier starts with ./ or ../ let's just resolve it simply with node:path's resolve
-        if (
-          process.platform === 'win32' &&
-          (rawSpecifier.startsWith('./') || rawSpecifier.startsWith('../'))
-        ) {
-          resolvedId = normalize(
-            resolve(dirname(referrer.replace(/^\//, '')), rawSpecifier),
-          ).replace(/\\/g, '/');
-        }
-
-        await debugDumps.rawLog(`
-          post resolveId:
-            resolvedId = ${resolvedId}
-        `);
-
-        if (!resolvedId) {
-          await debugDumps.rawLog(`
-            RETURNING 404 response (no resolvedId)
-          `);
-          return new MiniflareResponse(null, { status: 404 });
-        }
-
-        if (resolvedId.includes('?'))
-          resolvedId = resolvedId.slice(0, resolvedId.lastIndexOf('?'));
-
-        // on windows absolute paths start with a letter and a colon, but we need assume that they start with `/`
-        // when absolute to match the workerd specifiers (is this a bug in workerd?), so if we're on windows and
-        // get such a path here we prepend it with a `/` to makes it look like an absolute path
-        // const resolvedIdWindowsFixed =
-        //   process.platform === 'win32' && resolvedId.match(/^[A-Z]:/)
-        //     ? `/${resolvedId}`
-        //     : resolvedId;
-        const redirectTo =
-          !rawSpecifier.startsWith('./') &&
-          !rawSpecifier.startsWith('../') &&
-          resolvedId !== rawSpecifier &&
-          resolvedId !== specifier
-            ? // resolvedIdWindowsFixed !== rawSpecifier &&
-              // resolvedIdWindowsFixed !== specifier
-              resolvedId
-            : undefined;
-
-        if (redirectTo) {
-          await debugDumps.rawLog(`
-            REDIRECTING TO
-              redirectTo = ${redirectTo}
-
-              resolvedId = ${resolvedId}
-              rawSpecifier = ${rawSpecifier}
-              specifier = ${specifier}
-          `);
-          return new MiniflareResponse(null, {
-            headers: { location: resolvedId },
-            status: 301,
-          });
-        }
-
-        await debugDumps.rawLog(`
-          pre readFileSync:
-            resolvedId = ${resolvedId}
-        `);
-
-        // and we read the code from the resolved file
-        // @ts-ignore
-        const code: string | null = readFileSync(resolvedId, 'utf8');
-        // .catch(
-        //   (e) => ,
-        // );
-
-        // await debugDumps.rawLog(`
-        //   post readFileSync:
-        //     code = ${code}
-        // `);
-
-        const notFound = !code;
-
-        if (notFound) {
-          await debugDumps.rawLog(`
-            RETURNING 404 response (failed to read code)
-          `);
-          return new MiniflareResponse(null, { status: 404 });
-        }
-
-        const moduleInfo = await collectModuleInfo(code, resolvedId);
-
-        const mod = moduleInfo.isCommonJS
-          ? {
-              commonJsModule: code,
-              namedExports: moduleInfo.namedExports,
-            }
-          : {
-              esModule: code,
-            };
-
-        await debugDumps.rawLog(`
-              returning module
-                name = ${originalSpecifier.replace(/^\//, '')}
-                isCommonJs = ${moduleInfo.isCommonJS}
-            `);
-
-        return new MiniflareResponse(
-          JSON.stringify({
-            name: originalSpecifier.replace(/^\//, ''),
-            ...mod,
-          }),
-        );
-      } catch (e) {
-        throw e;
+      // on windows resolveId doesn't seem to resolve well with relative imports, so if the
+      // rawSpecifier starts with ./ or ../ let's just resolve it simply with node:path's resolve
+      if (
+        process.platform === 'win32' &&
+        (rawSpecifier.startsWith('./') || rawSpecifier.startsWith('../'))
+      ) {
+        resolvedId = normalize(
+          resolve(dirname(referrer.replace(/^\//, '')), rawSpecifier),
+        ).replace(/\\/g, '/');
       }
+
+      if (!resolvedId) {
+        return new MiniflareResponse(null, { status: 404 });
+      }
+
+      if (resolvedId.includes('?'))
+        resolvedId = resolvedId.slice(0, resolvedId.lastIndexOf('?'));
+
+      const redirectTo =
+        !rawSpecifier.startsWith('./') &&
+        !rawSpecifier.startsWith('../') &&
+        resolvedId !== rawSpecifier &&
+        resolvedId !== specifier
+          ? resolvedId
+          : undefined;
+
+      if (redirectTo) {
+        return new MiniflareResponse(null, {
+          headers: { location: resolvedId },
+          status: 301,
+        });
+      }
+
+      const code: string | null = await readFile(resolvedId, 'utf8');
+
+      const notFound = !code;
+
+      if (notFound) {
+        return new MiniflareResponse(null, { status: 404 });
+      }
+
+      const moduleInfo = await collectModuleInfo(code, resolvedId);
+
+      const mod = moduleInfo.isCommonJS
+        ? {
+            commonJsModule: code,
+            namedExports: moduleInfo.namedExports,
+          }
+        : {
+            esModule: code,
+          };
+
+      return new MiniflareResponse(
+        JSON.stringify({
+          name: originalSpecifier.replace(/^\//, ''),
+          ...mod,
+        }),
+      );
     },
     ...optionsFromToml,
   });

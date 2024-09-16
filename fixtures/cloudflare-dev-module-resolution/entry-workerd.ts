@@ -1,18 +1,24 @@
-import React, { version as ReactVersion } from 'react';
-
 export default {
   async fetch(_request: Request, env: any) {
     return Response.json({
-      // resolving React imports
-      'typeof React': typeof React,
-      'typeof React.cloneElement': typeof React.cloneElement,
-      reactVersionsMatch: React.version === ReactVersion,
-
-      // resolving imports from @remix-run/cloudflare
+      ...(await getReactValues()),
       ...(await getRemixRunCloudflareValues()),
     });
   },
 };
+
+async function getReactValues() {
+  try {
+    const { default: React, version: ReactVersion } = await import('react');
+    return {
+      'typeof React': typeof React,
+      'typeof React.cloneElement': typeof React.cloneElement,
+      reactVersionsMatch: React.version === ReactVersion,
+    };
+  } catch {
+    return {};
+  }
+}
 
 async function getRemixRunCloudflareValues() {
   try {
