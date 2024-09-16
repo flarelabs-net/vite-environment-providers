@@ -21,20 +21,40 @@ export async function collectModuleInfo(
   for (const reExport of cjsLexerResult.reexports) {
     const reExportsPath = resolve(dirname(moduleFilePath), reExport);
 
-    const reExportsFileStat = await stat(reExportsPath);
-    if (!reExportsFileStat.isFile) {
+    const reExportsPathHasExtension = ['.cjs', '.js'].some(ext =>
+      reExportsPath.endsWith(ext),
+    );
+
+    const extensionsToTry = reExportsPathHasExtension ? [''] : ['.cjs', '.js'];
+
+    let moduleWasResolved = false;
+
+    for (const extension of extensionsToTry) {
+      const path = `${reExportsPath}${extension}`;
+      let isFile = false;
+      try {
+        const reExportsFileStat = await stat(path);
+        isFile = reExportsFileStat.isFile();
+      } catch {}
+
+      if (isFile) {
+        moduleWasResolved = true;
+
+        const reExportsCode = await readFile(path, 'utf8');
+        const reExportsInfo = await collectModuleInfo(reExportsCode, path);
+
+        if (reExportsInfo.isCommonJS) {
+          for (const namedExport of reExportsInfo.namedExports) {
+            namedExportsSet.add(namedExport);
+          }
+        }
+      }
+    }
+
+    if (!moduleWasResolved) {
       throw new Error(
         "Error: Found cjs re-export that doesn't point to a relative path",
       );
-    }
-
-    const reExportsCode = await readFile(reExportsPath, 'utf8');
-    const reExportsInfo = await collectModuleInfo(reExportsCode, reExportsPath);
-
-    if (reExportsInfo.isCommonJS) {
-      for (const namedExport of reExportsInfo.namedExports) {
-        namedExportsSet.add(namedExport);
-      }
     }
   }
 
@@ -76,6 +96,13 @@ function isCommonJS(code: string): boolean {
       code,
     );
   if (hasBracketsCjsExports) {
+    return true;
+  }
+
+  // the code has exports such as `Object.defineProperty(exports, "aaa", ...)`
+  const hasDefinePropertyOnExports =
+    /Object\.defineProperty\(\s*exports,\s*(['"]).*?\1\s*,.*?\)/.test(code);
+  if (hasDefinePropertyOnExports) {
     return true;
   }
 
