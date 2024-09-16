@@ -253,17 +253,6 @@ async function createCloudflareDevEnvironment(
 
       let resolvedId = await resolveId(devEnv, fixedSpecifier, referrer);
 
-      // on windows resolveId doesn't seem to resolve well with relative imports, so if the
-      // rawSpecifier starts with ./ or ../ let's just resolve it simply with node:path's resolve
-      if (
-        process.platform === 'win32' &&
-        (rawSpecifier.startsWith('./') || rawSpecifier.startsWith('../'))
-      ) {
-        resolvedId = normalize(
-          resolve(dirname(referrer.replace(/^\//, '')), rawSpecifier),
-        ).replace(/\\/g, '/');
-      }
-
       if (!resolvedId) {
         return new MiniflareResponse(null, { status: 404 });
       }
