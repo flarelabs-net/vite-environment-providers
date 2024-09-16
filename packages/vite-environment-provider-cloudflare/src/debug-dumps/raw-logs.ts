@@ -11,6 +11,8 @@ let idx = 0;
 
 export async function rawLog(toLog: unknown) {
   if (!debugDumpsEnabled) return;
+  // I get logs too large to be diffed... so let's limit this
+  if (idx > 225) return;
 
   const separator = new Array(3)
     .fill(null)

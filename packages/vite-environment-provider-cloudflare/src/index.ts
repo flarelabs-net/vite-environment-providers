@@ -220,10 +220,12 @@ async function createCloudflareDevEnvironment(
       const referrer = url.searchParams.get('referrer');
 
       await debugDumps.rawLog(`
+        🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩
         moduleFallback start:
           resolveMethod = ${resolveMethod}
           rawSpecifier = ${rawSpecifier}
-          referred = ${referrer}
+          referrer = ${referrer}
+          specifier = ${specifier}
       `);
 
       const referrerDir = dirname(referrer);
@@ -322,10 +324,10 @@ async function createCloudflareDevEnvironment(
         //   (e) => ,
         // );
 
-        await debugDumps.rawLog(`
-          post readFileSync:
-            code = ${code}
-        `);
+        // await debugDumps.rawLog(`
+        //   post readFileSync:
+        //     code = ${code}
+        // `);
 
         const notFound = !code;
 
