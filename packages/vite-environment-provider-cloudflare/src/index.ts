@@ -288,11 +288,24 @@ async function createCloudflareDevEnvironment(
           process.platform === 'win32' && resolvedId.match(/^[A-Z]:/)
             ? `/${resolvedId}`
             : resolvedId;
+
+        // we don't want to redirect in the following case:
+        // resolvedId =              D:/a/vite-environment-providers/vite-environment-providers/node_modules/.pnpm/@remix-run+server-runtime@2.12.0_typescript@5.4.5/node_modules/@remix-run/server-runtime/dist/index.js
+        // resolvedIdWindowsFixed = /D:/a/vite-environment-providers/vite-environment-providers/node_modules/.pnpm/@remix-run+server-runtime@2.12.0_typescript@5.4.5/node_modules/@remix-run/server-runtime/dist/index.js
+        // referrer =               /D:/a/vite-environment-providers/vite-environment-providers/node_modules/.pnpm/@remix-run+cloudflare@2.12.0_@cloudflare+workers-types@4.20240815.0_typescript@5.4.5/node_modules/@remix-run/cloudflare/dist/implementations.js
+        // specifier =              /D:/a/vite-environment-providers/vite-environment-providers/node_modules/.pnpm/@remix-run+cloudflare@2.12.0_@cloudflare+workers-types@4.20240815.0_typescript@5.4.5/node_modules/@remix-run/cloudflare/dist/@remix-run/D:/a/vite-environment-providers/vite-environment-providers/node_modules/.pnpm/@remix-run+server-runtime@2.12.0_typescript@5.4.5/node_modules/@remix-run/server-runtime/dist/index.js
+        // rawSpecifier =           @remix-run/server-runtime
+
+        const weirdWindowsThing =
+          referrerDir + '/' + '@remix-run' + resolvedIdWindowsFixed;
+        const weirdWindowsThingCheck = specifier === weirdWindowsThing;
+
         const redirectTo =
           !rawSpecifier.startsWith('./') &&
           !rawSpecifier.startsWith('../') &&
           resolvedIdWindowsFixed !== rawSpecifier &&
-          resolvedIdWindowsFixed !== specifier
+          resolvedIdWindowsFixed !== specifier &&
+          !weirdWindowsThingCheck
             ? resolvedId
             : undefined;
 
@@ -305,6 +318,7 @@ async function createCloudflareDevEnvironment(
               resolvedIdWindowsFixed = ${resolvedIdWindowsFixed}
               rawSpecifier = ${rawSpecifier}
               specifier = ${specifier}
+              weirdWindowsThing = ${weirdWindowsThing}
           `);
           return new MiniflareResponse(null, {
             headers: { location: resolvedId },
