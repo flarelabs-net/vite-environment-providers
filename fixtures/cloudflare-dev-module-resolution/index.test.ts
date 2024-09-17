@@ -24,10 +24,7 @@ describe('Cloudflare dev module resolution', () => {
   });
 });
 
-async function fetchJsonFromViteDevServer(): Promise<null | Record<
-  string,
-  unknown
->> {
+async function fetchJsonFromViteDevServer(): Promise<unknown> {
   const viteServer = await createServer({
     ...config,
   });
@@ -37,7 +34,7 @@ async function fetchJsonFromViteDevServer(): Promise<null | Record<
   const addressInfo = viteServer.httpServer?.address();
 
   if (!addressInfo) {
-    throw new Error("addressInfo not found");
+    throw new Error('addressInfo not found');
   }
 
   const address =
