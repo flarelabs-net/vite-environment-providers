@@ -1,0 +1,41 @@
+name: Testing Module Resolution
+
+on: push
+
+jobs:
+  run-module-resolution-tests:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-13, windows-2022, ubuntu-22.04]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Install Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install Dependencies
+        shell: bash
+        run: pnpm install --frozen-lockfile
+
+      # Note: using pnpm --filter '@flarelabs-net/*' doesn't seem to work on windows for some reason, so we need
+      #       to build in the package directory instead of using the build:packages script from the root
+      - name: Build Cloudflare environment provider Package
+        shell: bash
+        run: pnpm build
+        working-directory: ./packages/vite-environment-provider-cloudflare
+
+      - name: Run tests
+        shell: bash
+        run: DEBUG_DUMPS=true pnpm --filter cloudflare-dev-module-resolution-fixture test

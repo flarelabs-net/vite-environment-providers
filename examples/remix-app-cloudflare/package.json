@@ -16,9 +16,9 @@
     "build-cf-types": "wrangler types"
   },
   "dependencies": {
-    "@remix-run/cloudflare": "2.8.0",
-    "@remix-run/node": "2.8.0",
-    "@remix-run/react": "2.8.0",
+    "@remix-run/cloudflare": "2.9.1",
+    "@remix-run/node": "2.9.1",
+    "@remix-run/react": "2.9.1",
     "cookie": "^0.6.0",
     "isbot": "^4.1.0",
     "react": "^18.2.0",
@@ -29,7 +29,7 @@
     "@cloudflare/workers-types": "^4.20240424.0",
     "@flarelabs-net/vite-environment-provider-cloudflare": "workspace:*",
     "@remix-run/dev": "2.9.1",
-    "@remix-run/server-runtime": "2.8.0",
+    "@remix-run/server-runtime": "2.9.1",
     "@types/react": "^18.2.20",
     "@types/react-dom": "^18.2.7",
     "@typescript-eslint/eslint-plugin": "^6.7.4",

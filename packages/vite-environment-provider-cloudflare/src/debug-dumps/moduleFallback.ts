@@ -1,9 +1,9 @@
-import { dirname } from 'node:path';
+import { dirname, resolve } from 'node:path';
 import { appendFile, mkdir, writeFile } from 'node:fs/promises';
 import { getImportCounterStr, runDir, debugDumpsEnabled } from './shared';
 
-const moduleFallbackRunDir = `${runDir}/moduleFallback`;
-const moduleFallbackLogsFilePath = `${moduleFallbackRunDir}/logs.txt`;
+const moduleFallbackRunDir = resolve(`${runDir}/moduleFallback`);
+const moduleFallbackLogsFilePath = resolve(`${moduleFallbackRunDir}/logs.txt`);
 
 if (debugDumpsEnabled) {
   await mkdir(moduleFallbackRunDir);
@@ -45,8 +45,14 @@ export async function dumpModuleFallbackServiceLog(
   );
 
   if (results.resolvedId && !results['notFound']) {
-    const filePath = `${moduleFallbackRunDir}/resolved/${results.resolvedId}`;
-    await mkdir(dirname(filePath), { recursive: true });
-    await writeFile(filePath, 'code' in results ? results.code : '');
+    const filePath = resolve(
+      `${moduleFallbackRunDir}/resolved/${results.resolvedId}`,
+    );
+    try {
+      // windows here fails with ENOENT: no such file or directory (even though we're setting recursive to true...)
+      // so let's try catch these operations
+      await mkdir(dirname(filePath), { recursive: true });
+      await writeFile(filePath, 'code' in results ? results.code : '');
+    } catch {}
   }
 }
