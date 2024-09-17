@@ -24,7 +24,7 @@ async function getRemixRunCloudflareValues() {
   try {
     const { json, createCookie } = await import('@remix-run/cloudflare');
     return {
-      'type of remix cloudflare json({})': typeof json({}),
+      'typeof remix cloudflare json({})': typeof json({}),
       remixRunCloudflareCookieName: createCookie(
         'my-remix-run-cloudflare-cookie',
       ).name,
