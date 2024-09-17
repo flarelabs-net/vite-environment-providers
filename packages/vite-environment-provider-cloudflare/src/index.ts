@@ -266,12 +266,14 @@ async function createCloudflareDevEnvironment(
         });
       }
 
-      const code: string | null = await readFile(resolvedId, 'utf8');
+      let code: string;
 
-      const notFound = !code;
-
-      if (notFound) {
-        return new MiniflareResponse(null, { status: 404 });
+      try {
+        code = await readFile(resolvedId, 'utf8');
+      } catch {
+        return new MiniflareResponse(`Failed to read file ${resolvedId}`, {
+          status: 404,
+        });
       }
 
       const moduleInfo = await collectModuleInfo(code, resolvedId);
