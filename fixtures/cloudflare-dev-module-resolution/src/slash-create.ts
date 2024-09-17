@@ -1,8 +1,8 @@
 // Note: we can import from the /web entrypoint, if we import from the default one things don't work
 //       both because of missing built-in node modules and also because of other module resolution
-//       issues. The latter should at some point get hopefully solved.
+//       issues.
 //       Note that in the readme itself: https://github.com/Snazzah/slash-create?tab=readme-ov-file#using-webservers
-//       they say to use /web, so I do think that this is good enough for now.
+//       they say to use /web, so I do think that this is good enough (should the standard import also work?)
 import { VERSION, SlashCreator, Collection } from 'slash-create/web';
 
 const slashCreatorInstance = new SlashCreator({
