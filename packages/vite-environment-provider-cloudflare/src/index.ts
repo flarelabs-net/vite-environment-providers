@@ -1,5 +1,5 @@
 import { fileURLToPath } from 'node:url';
-import { dirname, relative, resolve, normalize } from 'node:path';
+import { dirname, relative, resolve } from 'node:path';
 
 import {
   DevEnvironment as ViteDevEnvironment,
