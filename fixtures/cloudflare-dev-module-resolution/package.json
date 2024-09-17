@@ -9,6 +9,7 @@
   "dependencies": {
     "@flarelabs-net/vite-environment-provider-cloudflare": "workspace:*",
     "@types/react": "^18.3.1",
+    "discord-api-types": "0.37.98",
     "miniflare": "^3.20240129.3",
     "vite": "^5.4.4",
     "vitest": "^2.1.0",

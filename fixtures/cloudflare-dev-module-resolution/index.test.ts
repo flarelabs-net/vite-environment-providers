@@ -20,6 +20,15 @@ describe('Cloudflare dev module resolution', () => {
       'my-remix-run-cloudflare-cookie',
     );
   });
+
+  test('can successfully use the discord-api-types/v10 package', () => {
+    expect(output?.['[discord-api-types/v10] Utils.isLinkButton({})']).toEqual(
+      false,
+    );
+    expect(
+      output?.['[discord-api-types/v10] RPCErrorCodes.InvalidUser'],
+    ).toEqual(4010);
+  });
 });
 
 async function fetchOutputFromViteDevServer(): Promise<unknown> {
