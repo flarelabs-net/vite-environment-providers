@@ -35,7 +35,13 @@ describe('Cloudflare dev module resolution', () => {
   test('can successfully import from "slash-create" (which `require`s its package.json)', async () => {
     const output = await fetchOutputFromViteDevServer('/slash-create');
 
-    expect(output?.['(slash-create) VERSION']).toMatch(/^6\./);
+    expect(output?.['(slash-create/web) VERSION']).toMatch(/^6\./);
+    expect(
+      output?.[
+        '(slash-create/web) slashCreatorInstance is instance of SlashCreator'
+      ],
+    ).toEqual(true);
+    expect(output?.['(slash-create/web) myCollection.random()']).toEqual(54321);
   });
 });
 

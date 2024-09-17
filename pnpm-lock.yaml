@@ -9,11 +9,6 @@ overrides:
   '@remix-run/dev': npm:@dario-hacking/remix-run-dev@2.9.1-vite-env-6
   vite: 6.0.0-beta.0
 
-patchedDependencies:
-  slash-create:
-    hash: iuwzpqvf5crqqvajhf6lwto2ee
-    path: patches/slash-create.patch
-
 importers:
 
   .:
@@ -260,7 +255,7 @@ importers:
         version: 18.3.1
       slash-create:
         specifier: ^6.2.1
-        version: 6.2.1(patch_hash=iuwzpqvf5crqqvajhf6lwto2ee)(express@4.21.0)
+        version: 6.2.1(express@4.21.0)
       tweetnacl:
         specifier: ^1.0.3
         version: 1.0.3
@@ -8728,7 +8723,7 @@ snapshots:
 
   sisteransi@1.0.5: {}
 
-  slash-create@6.2.1(patch_hash=iuwzpqvf5crqqvajhf6lwto2ee)(express@4.21.0):
+  slash-create@6.2.1(express@4.21.0):
     dependencies:
       eventemitter3: 5.0.1
       lodash.isequal: 4.5.0
