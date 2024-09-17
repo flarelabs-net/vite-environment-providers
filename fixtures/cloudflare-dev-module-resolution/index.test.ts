@@ -37,7 +37,7 @@ async function fetchJsonFromViteDevServer(): Promise<null | Record<
   const addressInfo = viteServer.httpServer?.address();
 
   if (!addressInfo) {
-    return null;
+    throw new Error("addressInfo not found");
   }
 
   const address =
