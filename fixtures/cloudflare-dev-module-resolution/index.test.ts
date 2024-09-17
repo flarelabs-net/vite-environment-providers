@@ -15,7 +15,7 @@ describe('Cloudflare dev module resolution', () => {
     expect(output?.['reactVersionsMatch']).toEqual(true);
   });
   test('can successfully import utilities from "@remix-run/cloudflare"', () => {
-    expect(output?.['type of remix cloudflare json({})']).toEqual('object');
+    expect(output?.['typeof remix cloudflare json({})']).toEqual('object');
     expect(output?.['remixRunCloudflareCookieName']).toEqual(
       'my-remix-run-cloudflare-cookie',
     );
