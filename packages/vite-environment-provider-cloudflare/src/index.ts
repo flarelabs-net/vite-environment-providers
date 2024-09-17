@@ -24,7 +24,7 @@ import {
 
 import * as debugDumps from './debug-dumps';
 import { collectModuleInfo } from './moduleUtils';
-import { readFile } from 'node:fs/promises';
+import { readFile, stat } from 'node:fs/promises';
 
 export type DevEnvironment = ViteDevEnvironment & {
   metadata: EnvironmentMetadata;
@@ -242,7 +242,11 @@ async function createCloudflareDevEnvironment(
       const resolveId =
         resolveMethod === 'import' ? esmResolveId : cjsResolveId;
 
-      let resolvedId = await resolveId(devEnv, fixedSpecifier, referrer);
+      let resolvedId = await resolveId(
+        devEnv,
+        fixedSpecifier,
+        await withJsFileExtension(referrer),
+      );
 
       if (!resolvedId) {
         return new MiniflareResponse(null, { status: 404 });
@@ -501,4 +505,47 @@ function fixWindowsWorkerdAbsolutePath(path: string): string {
   if (lastIndex <= 0) return path.slice(1);
 
   return path.slice(lastIndex + 1);
+}
+
+/**
+ * In the module fallback service we can easily end up with referrers without a javascript (any) file extension.
+ *
+ * This happens every time a module, resolved without a file extension imports something (in this latter import
+ * the specifier is the original module path without the file extension).
+ *
+ * So when we have a specifier we actually need to add back the file extension if it is missing (because that's needed
+ * for relative module resolution to properly work).
+ *
+ * This function does just that, tries the various possible javascript file extensions and if with one it finds the file
+ * on the filesystem then it returns such path (PS: note that even if there were two files with the same exact location and
+ * name but different extensions we could be picking up the wrong one here, but that's not a concern since the concern here
+ * if just to obtain a real/existent filesystem path here).
+ *
+ * @param path a path to a javascript file, potentially without a file extension
+ * @returns the input path with a js file extension, unless no such file was actually found on the filesystem, in that
+ *          case the function returns the exact same path it received (something must have gone wrong somewhere and there
+ *          is not much we can do about it here)
+ */
+async function withJsFileExtension(path: string): Promise<string> {
+  const jsFileExtensions = ['.js', '.jsx', '.cjs', '.mjs'];
+
+  const pathAlreadyHaveJsExtension = jsFileExtensions.some(extension =>
+    path.endsWith(extension),
+  );
+
+  if (pathAlreadyHaveJsExtension) {
+    return path;
+  }
+
+  for (const extension of jsFileExtensions) {
+    try {
+      const pathWithExtension = `${path}${extension}`;
+      const fileStat = await stat(pathWithExtension);
+      if (fileStat.isFile()) {
+        return pathWithExtension;
+      }
+    } catch {}
+  }
+
+  return path;
 }
