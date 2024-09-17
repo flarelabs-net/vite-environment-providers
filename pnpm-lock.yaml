@@ -241,9 +241,6 @@ importers:
       eventemitter3:
         specifier: ^5.0.1
         version: 5.0.1
-      express:
-        specifier: ^4.21.0
-        version: 4.21.0
       lodash.isequal:
         specifier: ^4.5.0
         version: 4.5.0
@@ -256,9 +253,6 @@ importers:
       slash-create:
         specifier: ^6.2.1
         version: 6.2.1(express@4.21.0)
-      tweetnacl:
-        specifier: ^1.0.3
-        version: 1.0.3
       typescript:
         specifier: ^5.1.6
         version: 5.4.5
