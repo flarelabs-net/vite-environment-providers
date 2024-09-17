@@ -4,27 +4,25 @@ import { beforeAll, describe, expect, test } from 'vitest';
 import config from './vite.config';
 
 describe('Cloudflare dev module resolution', () => {
-  let jsonOutput: Record<string, unknown> = {};
+  let output: unknown;
 
   beforeAll(async () => {
-    jsonOutput = (await fetchJsonFromViteDevServer()) ?? {};
+    output = await fetchOutputFromViteDevServer();
   });
-
   test('can successfully import "React"', () => {
-    expect(jsonOutput['typeof React']).toEqual('object');
-    expect(jsonOutput['typeof React.cloneElement']).toEqual('function');
-    expect(jsonOutput['reactVersionsMatch']).toEqual(true);
+    expect(output?.['typeof React']).toEqual('object');
+    expect(output?.['typeof React.cloneElement']).toEqual('function');
+    expect(output?.['reactVersionsMatch']).toEqual(true);
   });
-
   test('can successfully import utilities from "@remix-run/cloudflare"', () => {
-    expect(jsonOutput['typeof remix cloudflare json({})']).toEqual('object');
-    expect(jsonOutput['remixRunCloudflareCookieName']).toEqual(
+    expect(output?.['type of remix cloudflare json({})']).toEqual('object');
+    expect(output?.['remixRunCloudflareCookieName']).toEqual(
       'my-remix-run-cloudflare-cookie',
     );
   });
 });
 
-async function fetchJsonFromViteDevServer(): Promise<unknown> {
+async function fetchOutputFromViteDevServer(): Promise<unknown> {
   const viteServer = await createServer({
     ...config,
   });
