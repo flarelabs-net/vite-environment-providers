@@ -29,6 +29,10 @@ describe('Cloudflare dev module resolution', () => {
       output?.['[discord-api-types/v10] RPCErrorCodes.InvalidUser'],
     ).toEqual(4010);
   });
+
+  test('can successfully use the slash-create package (which `require`s its package.json)', () => {
+    expect(output?.['slash-create VERSION']).toMatch(/^6\./);
+  });
 });
 
 async function fetchOutputFromViteDevServer(): Promise<unknown> {

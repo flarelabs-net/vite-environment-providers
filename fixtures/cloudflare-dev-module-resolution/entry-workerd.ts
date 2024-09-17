@@ -4,6 +4,7 @@ export default {
       ...(await getReactValues()),
       ...(await getRemixRunCloudflareValues()),
       ...(await getDiscordApiTypesValues()),
+      ...(await getSlashCreateValues()),
     });
   },
 };
@@ -47,6 +48,21 @@ async function getDiscordApiTypesValues() {
       ),
       '[discord-api-types/v10] RPCErrorCodes.InvalidUser':
         RPCErrorCodes.InvalidUser,
+    };
+  } catch {
+    return {};
+  }
+}
+
+async function getSlashCreateValues() {
+  try {
+    const { VERSION } = await import('slash-create');
+
+    // The slash-create package `require`s its package.json for its version
+    // (source: https://github.com/Snazzah/slash-create/blob/a08e8f35bc/src/constants.ts#L13)
+    // we need to make sure that we do support this
+    return {
+      'slash-create VERSION': VERSION,
     };
   } catch {
     return {};

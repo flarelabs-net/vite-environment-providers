@@ -5,9 +5,13 @@ import { readFile, stat } from 'node:fs/promises';
 export async function collectModuleInfo(
   moduleCode: string,
   moduleFilePath: string,
-): Promise<CjsModuleInfo | EsmModuleInfo> {
+): Promise<CjsModuleInfo | EsmModuleInfo | JsonModuleInfo> {
+  if (moduleFilePath.endsWith('.json')) {
+    return { moduleType: 'json' };
+  }
+
   if (!isCommonJS(moduleCode)) {
-    return { isCommonJS: false };
+    return { moduleType: 'esm' };
   }
 
   await initCjsModuleLexer();
@@ -43,7 +47,7 @@ export async function collectModuleInfo(
         const reExportsCode = await readFile(path, 'utf8');
         const reExportsInfo = await collectModuleInfo(reExportsCode, path);
 
-        if (reExportsInfo.isCommonJS) {
+        if (reExportsInfo.moduleType === 'cjs') {
           for (const namedExport of reExportsInfo.namedExports) {
             namedExportsSet.add(namedExport);
           }
@@ -63,18 +67,22 @@ export async function collectModuleInfo(
   );
 
   return {
-    isCommonJS: true,
+    moduleType: 'cjs',
     namedExports,
   };
 }
 
 type CjsModuleInfo = {
-  isCommonJS: true;
+  moduleType: 'cjs';
   namedExports: string[];
 };
 
 type EsmModuleInfo = {
-  isCommonJS: false;
+  moduleType: 'esm';
+};
+
+type JsonModuleInfo = {
+  moduleType: 'json';
 };
 
 function isCommonJS(code: string): boolean {

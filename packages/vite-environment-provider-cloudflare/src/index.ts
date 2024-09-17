@@ -278,14 +278,26 @@ async function createCloudflareDevEnvironment(
 
       const moduleInfo = await collectModuleInfo(code, resolvedId);
 
-      const mod = moduleInfo.isCommonJS
-        ? {
+      let mod = {};
+
+      switch (moduleInfo.moduleType) {
+        case 'cjs':
+          mod = {
             commonJsModule: code,
             namedExports: moduleInfo.namedExports,
-          }
-        : {
+          };
+          break;
+        case 'esm':
+          mod = {
             esModule: code,
           };
+          break;
+        case 'json':
+          mod = {
+            json: code,
+          };
+          break;
+      }
 
       return new MiniflareResponse(
         JSON.stringify({
