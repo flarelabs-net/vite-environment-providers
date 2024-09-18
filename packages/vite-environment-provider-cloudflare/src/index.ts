@@ -209,21 +209,27 @@ async function createCloudflareDevEnvironment(
       }
 
       const url = new URL(request.url);
-      let specifier = url.searchParams.get('specifier');
-      if (!specifier) {
+      const originalSpecifier = url.searchParams.get('specifier');
+      if (!originalSpecifier) {
         throw new Error('no specifier provided');
       }
 
-      const originalSpecifier = specifier;
+      // workerd always adds a `/` to the specifier that is fine in OSes like mac and linux where absolute
+      // paths do start with `/` but not in windows where absolute paths don't start with `/`, so for windows
+      // we need to remove the extra leading `/`
+      const specifier =
+        process.platform !== 'win32'
+          ? originalSpecifier
+          : originalSpecifier.replace(/^\//, '');
 
       const rawSpecifier = url.searchParams.get('rawSpecifier');
 
-      let referrer = url.searchParams.get('referrer');
+      const originalReferrer = url.searchParams.get('referrer');
 
-      if (process.platform === 'win32') {
-        specifier = fixWindowsWorkerdAbsolutePath(specifier);
-        referrer = fixWindowsWorkerdAbsolutePath(referrer);
-      }
+      const referrer =
+        process.platform !== 'win32'
+          ? originalReferrer
+          : originalReferrer.replace(/^\//, '');
 
       const referrerDir = dirname(referrer);
 
@@ -264,8 +270,12 @@ async function createCloudflareDevEnvironment(
           : undefined;
 
       if (redirectTo) {
+        // workerd always expects a leading `/` in absolute locations (like in mac and linux) windows absolute
+        // locations don't start with `/`, so in order not to confuse workerd we need to add one here before redirecting
+        const locationPrefix = `${process.platform === 'win32' ? '/' : ''}`;
+        const location = `${locationPrefix}${redirectTo}`;
         return new MiniflareResponse(null, {
-          headers: { location: resolvedId },
+          headers: { location },
           status: 301,
         });
       }
@@ -305,6 +315,9 @@ async function createCloudflareDevEnvironment(
 
       return new MiniflareResponse(
         JSON.stringify({
+          // The name of the module never includes a leading `/` so let's remove it
+          // (PS: I do not get this... is this a workerd bug?)
+          // (source: https://github.com/cloudflare/workerd/blob/442762b03/src/workerd/server/server.c%2B%2B#L2838-L2840)
           name: originalSpecifier.replace(/^\//, ''),
           ...mod,
         }),
@@ -469,42 +482,6 @@ function getApproximateSpecifier(target: string, referrerDir: string): string {
   if (/^(node|cloudflare|workerd):/.test(target)) result = target;
   result = relative(referrerDir, target);
   return result;
-}
-
-/**
- * Fixes paths that we received on windows in the module fallback callback that are incorrect.
- *
- * Such incorrect paths get generated (only on windows, and I've only tested this with pnpm) when there is
- * a redirection, in such case the paths that we get from workerd will contain an incorrect prefix plus the
- * actual correct path. So what we need to do is remove the incorrect prefix.
- *
- * This function fixes such paths by checking if the are absolute, (e.g. they start with something like `/D:/a/'),
- * searches for the last occurrence of the disk absolute location (e.g. `/D:/a/`) and takes that substring starting
- * from such location as the fixed path.
- *
- * This function also removes the leading `/` from its result since that is something that workerd adds/expects but
- * not something that windows uses/works with.
- *
- * @example
- *  This is an example of an incorrect path:
- *    We have `rawSpecifier` set to `@remix-run/server-runtime` and we redirect to
- *     `D:/a/vite-environment-providers/vite-environment-providers/node_modules/.pnpm/@remix-run+server-runtime@2.12.0_typescript@5.4.5/node_modules/@remix-run/server-runtime/dist/index.js`
- *    On the next module fallback callback call we get such `specifier`:
- *        `/D:/a/vite-environment-providers/vite-environment-providers/node_modules/.pnpm/@remix-run+cloudflare@2.12.0_@cloudflare+workers-types@4.20240815.0_typescript@5.4.5/node_modules/@remix-run/cloudflare/dist/@remix-run/D:/a/vite-environment-providers/vite-environment-providers/node_modules/.pnpm/@remix-run+server-runtime@2.12.0_typescript@5.4.5/node_modules/@remix-run/server-runtime/dist/index.js`
- *    of which only want the last portion is correct (I am not sure how the initial portion is generated, it seems to be a combination of the previous module fallback values)
- *
- * TODO: create a proper minimal reproduction and open an issue in the workerd repository for this
- *
- * @param path the incorrect path received by workerd
- * @returns the path to be used in the module fallback service callback
- */
-function fixWindowsWorkerdAbsolutePath(path: string): string {
-  const windowsAbsMatch = path.match(/^\/[A-Z]:\/[a-z]\//);
-  if (windowsAbsMatch?.length !== 1) return path;
-  const lastIndex = path.lastIndexOf(windowsAbsMatch[0]);
-  if (lastIndex <= 0) return path.slice(1);
-
-  return path.slice(lastIndex + 1);
 }
 
 /**
