@@ -7,17 +7,19 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "@cloudflare/workers-types": "^4.20240424.0",
     "@flarelabs-net/vite-environment-provider-cloudflare": "workspace:*",
+    "@remix-run/cloudflare": "2.12.0",
+    "@remix-run/server-runtime": "2.12.0",
     "@types/react": "^18.3.1",
     "discord-api-types": "0.37.98",
     "miniflare": "^3.20240129.3",
+    "react": "^18.3.1",
+    "slash-create": "^6.2.1",
+    "typescript": "^5.1.6",
+    "undici": "^6.19.8",
     "vite": "^5.4.4",
     "vitest": "^2.1.0",
-    "wrangler": "^3.57.2",
-    "@cloudflare/workers-types": "^4.20240424.0",
-    "react": "^18.3.1",
-    "@remix-run/cloudflare": "2.12.0",
-    "@remix-run/server-runtime": "2.12.0",
-    "typescript": "^5.1.6"
+    "wrangler": "^3.57.2"
   }
 }

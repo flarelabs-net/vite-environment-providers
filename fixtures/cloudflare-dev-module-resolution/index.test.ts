@@ -1,37 +1,51 @@
 import { createServer } from 'vite';
-import { beforeAll, describe, expect, test } from 'vitest';
+import { describe, expect, test } from 'vitest';
 
 import config from './vite.config';
 
 describe('Cloudflare dev module resolution', () => {
-  let output: unknown;
+  test('can successfully import from "react"', async () => {
+    const output = await fetchOutputFromViteDevServer('/react');
 
-  beforeAll(async () => {
-    output = await fetchOutputFromViteDevServer();
+    expect(output?.['(react) typeof React']).toEqual('object');
+    expect(output?.['(react) typeof React.cloneElement']).toEqual('function');
+    expect(output?.['(react) reactVersionsMatch']).toEqual(true);
   });
-  test('can successfully import "React"', () => {
-    expect(output?.['typeof React']).toEqual('object');
-    expect(output?.['typeof React.cloneElement']).toEqual('function');
-    expect(output?.['reactVersionsMatch']).toEqual(true);
-  });
-  test('can successfully import utilities from "@remix-run/cloudflare"', () => {
-    expect(output?.['typeof remix cloudflare json({})']).toEqual('object');
-    expect(output?.['remixRunCloudflareCookieName']).toEqual(
+
+  test('can successfully import utilities from "@remix-run/cloudflare"', async () => {
+    const output = await fetchOutputFromViteDevServer('/remix');
+
+    expect(output?.['(remix) typeof cloudflare json({})']).toEqual('object');
+    expect(output?.['(remix) remixRunCloudflareCookieName']).toEqual(
       'my-remix-run-cloudflare-cookie',
     );
   });
 
-  test('can successfully use the discord-api-types/v10 package', () => {
-    expect(output?.['[discord-api-types/v10] Utils.isLinkButton({})']).toEqual(
+  test('can successfully import from "discord-api-types/v10"', async () => {
+    const output = await fetchOutputFromViteDevServer('/discord-api-types');
+
+    expect(output?.['(discord-api-types/v10) Utils.isLinkButton({})']).toEqual(
       false,
     );
     expect(
-      output?.['[discord-api-types/v10] RPCErrorCodes.InvalidUser'],
+      output?.['(discord-api-types/v10) RPCErrorCodes.InvalidUser'],
     ).toEqual(4010);
+  });
+
+  test('can successfully import from "slash-create" (which `require`s its package.json)', async () => {
+    const output = await fetchOutputFromViteDevServer('/slash-create');
+
+    expect(output?.['(slash-create/web) VERSION']).toMatch(/^6\./);
+    expect(
+      output?.[
+        '(slash-create/web) slashCreatorInstance is instance of SlashCreator'
+      ],
+    ).toEqual(true);
+    expect(output?.['(slash-create/web) myCollection.random()']).toEqual(54321);
   });
 });
 
-async function fetchOutputFromViteDevServer(): Promise<unknown> {
+async function fetchOutputFromViteDevServer(path: string): Promise<unknown> {
   const viteServer = await createServer({
     ...config,
   });
@@ -47,7 +61,7 @@ async function fetchOutputFromViteDevServer(): Promise<unknown> {
   const address =
     typeof addressInfo === 'string'
       ? addressInfo
-      : `http://localhost:${addressInfo.port}`;
+      : `http://localhost:${addressInfo.port}${path}`;
   const resp = await fetch(address);
   await viteServer.close();
   return await resp.json();
