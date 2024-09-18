@@ -529,11 +529,11 @@ function fixWindowsWorkerdAbsolutePath(path: string): string {
 async function withJsFileExtension(path: string): Promise<string> {
   const jsFileExtensions = ['.js', '.jsx', '.cjs', '.mjs'];
 
-  const pathAlreadyHaveJsExtension = jsFileExtensions.some(extension =>
+  const pathHasJsExtension = jsFileExtensions.some(extension =>
     path.endsWith(extension),
   );
 
-  if (pathAlreadyHaveJsExtension) {
+  if (pathHasJsExtension) {
     return path;
   }
 
