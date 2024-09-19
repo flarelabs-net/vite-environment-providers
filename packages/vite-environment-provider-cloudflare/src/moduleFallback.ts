@@ -148,7 +148,7 @@ function extractModuleFallbackValues(request: Request): {
     // where absolute paths do start with `/` as well. But it is not ok in windows where absolute paths don't start
     // with `/`, so for windows we need to remove the extra leading `/`
     const value =
-      !isRaw && process.platform !== 'win32'
+      isRaw || process.platform !== 'win32'
         ? originalValue
         : originalValue.replace(/^\//, '');
 
