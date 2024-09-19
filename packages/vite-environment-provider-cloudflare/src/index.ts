@@ -25,6 +25,7 @@ import {
 import * as debugDumps from './debug-dumps';
 import { collectModuleInfo } from './moduleUtils';
 import { readFile, stat } from 'node:fs/promises';
+import { URL } from 'url';
 
 export type DevEnvironment = ViteDevEnvironment & {
   metadata: EnvironmentMetadata;
@@ -203,33 +204,8 @@ async function createCloudflareDevEnvironment(
     },
     unsafeUseModuleFallbackService: true,
     async unsafeModuleFallbackService(request) {
-      const resolveMethod = request.headers.get('X-Resolve-Method');
-      if (resolveMethod !== 'import' && resolveMethod !== 'require') {
-        throw new Error('unrecognized resolvedMethod');
-      }
-
-      const url = new URL(request.url);
-      const originalSpecifier = url.searchParams.get('specifier');
-      if (!originalSpecifier) {
-        throw new Error('no specifier provided');
-      }
-
-      // workerd always adds a `/` to the specifier that is fine in OSes like mac and linux where absolute
-      // paths do start with `/` but not in windows where absolute paths don't start with `/`, so for windows
-      // we need to remove the extra leading `/`
-      const specifier =
-        process.platform !== 'win32'
-          ? originalSpecifier
-          : originalSpecifier.replace(/^\//, '');
-
-      const rawSpecifier = url.searchParams.get('rawSpecifier');
-
-      const originalReferrer = url.searchParams.get('referrer');
-
-      const referrer =
-        process.platform !== 'win32'
-          ? originalReferrer
-          : originalReferrer.replace(/^\//, '');
+      const { resolveMethod, referrer, specifier, rawSpecifier } =
+        extractModuleFallbackValues(request);
 
       const referrerDir = dirname(referrer);
 
@@ -315,10 +291,10 @@ async function createCloudflareDevEnvironment(
 
       return new MiniflareResponse(
         JSON.stringify({
-          // The name of the module never includes a leading `/` so let's remove it
-          // (PS: I do not get this... is this a workerd bug?)
+          // The name of the module has to never include a leading `/` (not even on mac/linux) so let's remove it
+          // (PS: I don't get this... is this a workerd bug?)
           // (source: https://github.com/cloudflare/workerd/blob/442762b03/src/workerd/server/server.c%2B%2B#L2838-L2840)
-          name: originalSpecifier.replace(/^\//, ''),
+          name: specifier.replace(/^\//, ''),
           ...mod,
         }),
       );
@@ -384,6 +360,56 @@ async function createCloudflareDevEnvironment(
 
   return devEnv;
 }
+
+/**
+ * Extracts the various module fallback values from the provided request
+ *
+ * As part of this extraction, the paths are adjusted for windows systems (in which absolute paths should not have leading `/`s)
+ *
+ * @param request the request the module fallback service received
+ * @returns all the extracted (adjusted) values that the fallback service request holds
+ */
+function extractModuleFallbackValues(request: Request): {
+  resolveMethod: 'import' | 'require';
+  referrer: string;
+  specifier: string;
+  rawSpecifier: string;
+} {
+  const resolveMethod = request.headers.get('X-Resolve-Method');
+  if (resolveMethod !== 'import' && resolveMethod !== 'require') {
+    throw new Error('unrecognized resolvedMethod');
+  }
+
+  const url = new URL(request.url);
+
+  const extractPath = (
+    key: 'referrer' | 'specifier' | 'rawSpecifier',
+    isRaw: boolean = false,
+  ): string => {
+    const originalValue = url.searchParams.get(key);
+    if (!originalValue) {
+      throw new Error(`no ${key} provided`);
+    }
+
+    // workerd always adds a `/` to the absolute paths (raw values excluded) that is fine in OSes like mac and linux
+    // where absolute paths do start with `/` as well. But it is not ok in windows where absolute paths don't start
+    // with `/`, so for windows we need to remove the extra leading `/`
+    const value =
+      !isRaw && process.platform !== 'win32'
+        ? originalValue
+        : originalValue.replace(/^\//, '');
+
+    return value;
+  };
+
+  return {
+    resolveMethod,
+    referrer: extractPath('referrer'),
+    specifier: extractPath('specifier'),
+    rawSpecifier: extractPath('rawSpecifier', true),
+  };
+}
+
 function createHotChannel(webSocket: WebSocket): HotChannel {
   webSocket.accept();
 
