@@ -167,6 +167,19 @@ async function createCloudflareDevEnvironment(
     extensions: ['.cjs', '.cts', '.js', '.ts', '.jsx', '.tsx', '.json'],
   });
 
+  const resolveId = (
+    id: string,
+    importer?: string,
+    { resolveMethod }: { resolveMethod: 'require' | 'import' } = {
+      resolveMethod: 'import',
+    },
+  ) => {
+    const resolveIdFn =
+      resolveMethod === 'import' ? esmResolveId : cjsResolveId;
+
+    return resolveIdFn(devEnv, id, importer);
+  };
+
   const mf = new Miniflare({
     modulesRoot: fileURLToPath(new URL('./', import.meta.url)),
     modules: [
@@ -221,13 +234,12 @@ async function createCloudflareDevEnvironment(
 
       fixedSpecifier = rawSpecifier;
 
-      const resolveId =
-        resolveMethod === 'import' ? esmResolveId : cjsResolveId;
-
       let resolvedId = await resolveId(
-        devEnv,
         fixedSpecifier,
         await withJsFileExtension(referrer),
+        {
+          resolveMethod,
+        },
       );
 
       if (!resolvedId) {
