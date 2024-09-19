@@ -9,9 +9,7 @@ import { URL } from 'url';
 export type ResolveIdFunction = (
   id: string,
   importer?: string,
-  {
-    resolveMethod,
-  }?: {
+  options?: {
     resolveMethod: 'require' | 'import';
   },
 ) => Promise<string>;
