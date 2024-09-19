@@ -1,5 +1,5 @@
 import { fileURLToPath } from 'node:url';
-import { dirname, relative, resolve } from 'node:path';
+import { resolve } from 'node:path';
 
 import {
   DevEnvironment as ViteDevEnvironment,
@@ -23,8 +23,7 @@ import {
 } from 'miniflare';
 
 import * as debugDumps from './debug-dumps';
-import { collectModuleInfo } from './moduleUtils';
-import { readFile, stat } from 'node:fs/promises';
+import { getModuleFallbackCallback, ResolveIdFunction } from './moduleFallback';
 
 export type DevEnvironment = ViteDevEnvironment & {
   metadata: EnvironmentMetadata;
@@ -166,6 +165,19 @@ async function createCloudflareDevEnvironment(
     extensions: ['.cjs', '.cts', '.js', '.ts', '.jsx', '.tsx', '.json'],
   });
 
+  const resolveId: ResolveIdFunction = (
+    id,
+    importer,
+    { resolveMethod } = {
+      resolveMethod: 'import',
+    },
+  ) => {
+    const resolveIdFn =
+      resolveMethod === 'import' ? esmResolveId : cjsResolveId;
+
+    return resolveIdFn(devEnv, id, importer);
+  };
+
   const mf = new Miniflare({
     modulesRoot: fileURLToPath(new URL('./', import.meta.url)),
     modules: [
@@ -202,114 +214,7 @@ async function createCloudflareDevEnvironment(
       __debugDump: debugDumps.__debugDumpBinding,
     },
     unsafeUseModuleFallbackService: true,
-    async unsafeModuleFallbackService(request) {
-      const resolveMethod = request.headers.get('X-Resolve-Method');
-      if (resolveMethod !== 'import' && resolveMethod !== 'require') {
-        throw new Error('unrecognized resolvedMethod');
-      }
-
-      const url = new URL(request.url);
-      let specifier = url.searchParams.get('specifier');
-      if (!specifier) {
-        throw new Error('no specifier provided');
-      }
-
-      const originalSpecifier = specifier;
-
-      const rawSpecifier = url.searchParams.get('rawSpecifier');
-
-      let referrer = url.searchParams.get('referrer');
-
-      if (process.platform === 'win32') {
-        specifier = fixWindowsWorkerdAbsolutePath(specifier);
-        referrer = fixWindowsWorkerdAbsolutePath(referrer);
-      }
-
-      const referrerDir = dirname(referrer);
-
-      let fixedSpecifier = specifier;
-
-      if (!/node_modules/.test(referrerDir)) {
-        // for app source code strip prefix and prepend /
-        fixedSpecifier = '/' + getApproximateSpecifier(specifier, referrerDir);
-      } else if (!specifier.endsWith('.js')) {
-        // for package imports from other packages strip prefix
-        fixedSpecifier = getApproximateSpecifier(specifier, referrerDir);
-      }
-
-      fixedSpecifier = rawSpecifier;
-
-      const resolveId =
-        resolveMethod === 'import' ? esmResolveId : cjsResolveId;
-
-      let resolvedId = await resolveId(
-        devEnv,
-        fixedSpecifier,
-        await withJsFileExtension(referrer),
-      );
-
-      if (!resolvedId) {
-        return new MiniflareResponse(null, { status: 404 });
-      }
-
-      if (resolvedId.includes('?'))
-        resolvedId = resolvedId.slice(0, resolvedId.lastIndexOf('?'));
-
-      const redirectTo =
-        !rawSpecifier.startsWith('./') &&
-        !rawSpecifier.startsWith('../') &&
-        resolvedId !== rawSpecifier &&
-        resolvedId !== specifier
-          ? resolvedId
-          : undefined;
-
-      if (redirectTo) {
-        return new MiniflareResponse(null, {
-          headers: { location: resolvedId },
-          status: 301,
-        });
-      }
-
-      let code: string;
-
-      try {
-        code = await readFile(resolvedId, 'utf8');
-      } catch {
-        return new MiniflareResponse(`Failed to read file ${resolvedId}`, {
-          status: 404,
-        });
-      }
-
-      const moduleInfo = await collectModuleInfo(code, resolvedId);
-
-      let mod = {};
-
-      switch (moduleInfo.moduleType) {
-        case 'cjs':
-          mod = {
-            commonJsModule: code,
-            namedExports: moduleInfo.namedExports,
-          };
-          break;
-        case 'esm':
-          mod = {
-            esModule: code,
-          };
-          break;
-        case 'json':
-          mod = {
-            json: code,
-          };
-          break;
-      }
-
-      return new MiniflareResponse(
-        JSON.stringify({
-          name: originalSpecifier.replace(/^\//, ''),
-          ...mod,
-        }),
-      );
-    },
+    unsafeModuleFallbackService: getModuleFallbackCallback(resolveId),
     ...optionsFromToml,
   });
 
@@ -371,6 +276,7 @@ async function createCloudflareDevEnvironment(
 
   return devEnv;
 }
+
 function createHotChannel(webSocket: WebSocket): HotChannel {
   webSocket.accept();
 
@@ -462,90 +368,4 @@ function getOptionsFromWranglerConfig(configPath: string) {
     compatibilityDate,
     compatibilityFlags,
   };
-}
-
-function getApproximateSpecifier(target: string, referrerDir: string): string {
-  let result = '';
-  if (/^(node|cloudflare|workerd):/.test(target)) result = target;
-  result = relative(referrerDir, target);
-  return result;
-}
-
-/**
- * Fixes paths that we received on windows in the module fallback callback that are incorrect.
- *
- * Such incorrect paths get generated (only on windows, and I've only tested this with pnpm) when there is
- * a redirection, in such case the paths that we get from workerd will contain an incorrect prefix plus the
- * actual correct path. So what we need to do is remove the incorrect prefix.
- *
- * This function fixes such paths by checking if the are absolute, (e.g. they start with something like `/D:/a/'),
- * searches for the last occurrence of the disk absolute location (e.g. `/D:/a/`) and takes that substring starting
- * from such location as the fixed path.
- *
- * This function also removes the leading `/` from its result since that is something that workerd adds/expects but
- * not something that windows uses/works with.
- *
- * @example
- *  This is an example of an incorrect path:
- *    We have `rawSpecifier` set to `@remix-run/server-runtime` and we redirect to
- *     `D:/a/vite-environment-providers/vite-environment-providers/node_modules/.pnpm/@remix-run+server-runtime@2.12.0_typescript@5.4.5/node_modules/@remix-run/server-runtime/dist/index.js`
- *    On the next module fallback callback call we get such `specifier`:
- *        `/D:/a/vite-environment-providers/vite-environment-providers/node_modules/.pnpm/@remix-run+cloudflare@2.12.0_@cloudflare+workers-types@4.20240815.0_typescript@5.4.5/node_modules/@remix-run/cloudflare/dist/@remix-run/D:/a/vite-environment-providers/vite-environment-providers/node_modules/.pnpm/@remix-run+server-runtime@2.12.0_typescript@5.4.5/node_modules/@remix-run/server-runtime/dist/index.js`
- *    of which only want the last portion is correct (I am not sure how the initial portion is generated, it seems to be a combination of the previous module fallback values)
- *
- * TODO: create a proper minimal reproduction and open an issue in the workerd repository for this
- *
- * @param path the incorrect path received by workerd
- * @returns the path to be used in the module fallback service callback
- */
-function fixWindowsWorkerdAbsolutePath(path: string): string {
-  const windowsAbsMatch = path.match(/^\/[A-Z]:\/[a-z]\//);
-  if (windowsAbsMatch?.length !== 1) return path;
-  const lastIndex = path.lastIndexOf(windowsAbsMatch[0]);
-  if (lastIndex <= 0) return path.slice(1);
-
-  return path.slice(lastIndex + 1);
-}
-
-/**
- * In the module fallback service we can easily end up with referrers without a javascript (any) file extension.
- *
- * This happens every time a module, resolved without a file extension imports something (in this latter import
- * the specifier is the original module path without the file extension).
- *
- * So when we have a specifier we actually need to add back the file extension if it is missing (because that's needed
- * for relative module resolution to properly work).
- *
- * This function does just that, tries the various possible javascript file extensions and if with one it finds the file
- * on the filesystem then it returns such path (PS: note that even if there were two files with the same exact location and
- * name but different extensions we could be picking up the wrong one here, but that's not a concern since the concern here
- * if just to obtain a real/existent filesystem path here).
- *
- * @param path a path to a javascript file, potentially without a file extension
- * @returns the input path with a js file extension, unless no such file was actually found on the filesystem, in that
- *          case the function returns the exact same path it received (something must have gone wrong somewhere and there
- *          is not much we can do about it here)
- */
-async function withJsFileExtension(path: string): Promise<string> {
-  const jsFileExtensions = ['.js', '.jsx', '.cjs', '.mjs'];
-
-  const pathHasJsExtension = jsFileExtensions.some(extension =>
-    path.endsWith(extension),
-  );
-
-  if (pathHasJsExtension) {
-    return path;
-  }
-
-  for (const extension of jsFileExtensions) {
-    try {
-      const pathWithExtension = `${path}${extension}`;
-      const fileStat = await stat(pathWithExtension);
-      if (fileStat.isFile()) {
-        return pathWithExtension;
-      }
-    } catch {}
-  }
-
-  return path;
 }
