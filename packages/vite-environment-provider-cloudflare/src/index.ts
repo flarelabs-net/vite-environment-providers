@@ -23,7 +23,6 @@ import {
 } from 'miniflare';
 
 import * as debugDumps from './debug-dumps';
-import { URL } from 'url';
 import { getModuleFallbackCallback, ResolveIdFunction } from './moduleFallback';
 
 export type DevEnvironment = ViteDevEnvironment & {
