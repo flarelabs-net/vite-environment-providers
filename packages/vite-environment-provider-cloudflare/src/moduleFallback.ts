@@ -20,17 +20,7 @@ export function getModuleFallbackCallback(resolveId: ResolveIdFunction) {
       const { resolveMethod, referrer, specifier, rawSpecifier } =
         extractModuleFallbackValues(request);
 
-      const referrerDir = dirname(referrer);
-
       let fixedSpecifier = specifier;
-
-      if (!/node_modules/.test(referrerDir)) {
-        // for app source code strip prefix and prepend /
-        fixedSpecifier = '/' + getApproximateSpecifier(specifier, referrerDir);
-      } else if (!specifier.endsWith('.js')) {
-        // for package imports from other packages strip prefix
-        fixedSpecifier = getApproximateSpecifier(specifier, referrerDir);
-      }
 
       fixedSpecifier = rawSpecifier;
 
@@ -144,13 +134,6 @@ function extractModuleFallbackValues(request: Request): {
     specifier: extractPath('specifier'),
     rawSpecifier: extractPath('rawSpecifier'),
   };
-}
-
-function getApproximateSpecifier(target: string, referrerDir: string): string {
-  let result = '';
-  if (/^(node|cloudflare|workerd):/.test(target)) result = target;
-  result = relative(referrerDir, target);
-  return result;
 }
 
 /**
