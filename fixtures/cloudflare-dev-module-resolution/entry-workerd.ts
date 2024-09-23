@@ -1,8 +1,11 @@
 const allowedPaths = new Set([
-  '/react',
-  '/remix',
-  '/discord-api-types',
-  '/slash-create',
+  '/require-ext',
+  '/require-no-ext',
+  '/require-json',
+  '/third-party/react',
+  '/third-party/remix',
+  '/third-party/discord-api-types',
+  '/third-party/slash-create',
 ]);
 
 export default {
