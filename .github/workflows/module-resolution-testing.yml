@@ -38,4 +38,4 @@ jobs:
 
       - name: Run tests
         shell: bash
-        run: DEBUG_DUMPS=true pnpm --filter cloudflare-dev-module-resolution-fixture test
+        run: pnpm --filter cloudflare-dev-module-resolution-fixture test
