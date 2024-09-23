@@ -2,3 +2,4 @@ packages:
   - 'packages/*'
   - 'examples/*'
   - 'fixtures/*'
+  - 'fixtures/cloudflare-dev-module-resolution/packages/*'

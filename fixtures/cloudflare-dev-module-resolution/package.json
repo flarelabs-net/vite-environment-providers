@@ -20,6 +20,7 @@
     "undici": "^6.19.8",
     "vite": "^5.4.4",
     "vitest": "^2.1.0",
-    "wrangler": "^3.57.2"
+    "wrangler": "^3.57.2",
+    "@cloudflare-dev-module-resolution/requires": "workspace:*"
   }
 }
