@@ -20,12 +20,8 @@ export function getModuleFallbackCallback(resolveId: ResolveIdFunction) {
       const { resolveMethod, referrer, specifier, rawSpecifier } =
         extractModuleFallbackValues(request);
 
-      let fixedSpecifier = specifier;
-
-      fixedSpecifier = rawSpecifier;
-
       let resolvedId = await resolveId(
-        fixedSpecifier,
+        rawSpecifier,
         await withJsFileExtension(referrer),
         {
           resolveMethod,
