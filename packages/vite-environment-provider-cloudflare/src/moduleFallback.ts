@@ -222,7 +222,7 @@ function patchModuleFallbackHandler(
       }
 
       // on windows we have to add a leading `/` to the returned location, otherwise on next request the module fallback
-      // receives will contain an incorrect the specifier (created by concatenating the directory of the referred with the
+      // receives will contain an incorrect the specifier (created by concatenating the directory of the referrer with the
       // specifier) causing the module resolution to ultimately fail
       //
       // Why the incorrect specifier if the `/` is missing?
@@ -235,7 +235,7 @@ function patchModuleFallbackHandler(
       // (https://github.com/capnproto/capnproto/blob/8b93996/c%2B%2B/src/kj/filesystem.h#L120-L131)
       // this works as intended in operative systems where absolute paths do start with `/` but that's not the case
       // in windows, so there we need to add the leading `/` to let workerd know that this is an absolute path.
-      // Note that on windows we remove leading `/`s to the specifier and referred (see above), adding the leading `/`
+      // Note that on windows we remove leading `/`s to the specifier and referrer (see above), adding the leading `/`
       // here doesn't cause any issue for our handler.
       const fixedLocation = `${process.platform === 'win32' ? '/' : ''}${location}`;
       return new Response(null, {
