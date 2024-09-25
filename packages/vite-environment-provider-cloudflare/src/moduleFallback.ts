@@ -15,101 +15,82 @@ export type ResolveIdFunction = (
 ) => Promise<string>;
 
 export function getModuleFallbackCallback(resolveId: ResolveIdFunction) {
-  return async (request: Request): Promise<Response> => {
-    const { resolveMethod, referrer, specifier, rawSpecifier } =
-      extractModuleFallbackValues(request);
+  return patchModuleFallbackHandler(
+    async (request: Request): Promise<Response> => {
+      const { resolveMethod, referrer, specifier, rawSpecifier } =
+        extractModuleFallbackValues(request);
 
-    const referrerDir = dirname(referrer);
+      let resolvedId = await resolveId(
+        rawSpecifier,
+        await withJsFileExtension(referrer),
+        {
+          resolveMethod,
+        },
+      );
 
-    let fixedSpecifier = specifier;
+      if (!resolvedId) {
+        return new Response(null, { status: 404 });
+      }
 
-    if (!/node_modules/.test(referrerDir)) {
-      // for app source code strip prefix and prepend /
-      fixedSpecifier = '/' + getApproximateSpecifier(specifier, referrerDir);
-    } else if (!specifier.endsWith('.js')) {
-      // for package imports from other packages strip prefix
-      fixedSpecifier = getApproximateSpecifier(specifier, referrerDir);
-    }
+      if (resolvedId.includes('?'))
+        resolvedId = resolvedId.slice(0, resolvedId.lastIndexOf('?'));
 
-    fixedSpecifier = rawSpecifier;
+      const redirectTo =
+        !rawSpecifier.startsWith('./') &&
+        !rawSpecifier.startsWith('../') &&
+        resolvedId !== rawSpecifier &&
+        resolvedId !== specifier
+          ? resolvedId
+          : undefined;
 
-    let resolvedId = await resolveId(
-      fixedSpecifier,
-      await withJsFileExtension(referrer),
-      {
-        resolveMethod,
-      },
-    );
+      if (redirectTo) {
+        return new Response(null, {
+          headers: { location: redirectTo },
+          status: 301,
+        });
+      }
 
-    if (!resolvedId) {
-      return new Response(null, { status: 404 });
-    }
+      let code: string;
 
-    if (resolvedId.includes('?'))
-      resolvedId = resolvedId.slice(0, resolvedId.lastIndexOf('?'));
+      try {
+        code = await readFile(resolvedId, 'utf8');
+      } catch {
+        return new Response(`Failed to read file ${resolvedId}`, {
+          status: 404,
+        });
+      }
 
-    const redirectTo =
-      !rawSpecifier.startsWith('./') &&
-      !rawSpecifier.startsWith('../') &&
-      resolvedId !== rawSpecifier &&
-      resolvedId !== specifier
-        ? resolvedId
-        : undefined;
+      const moduleInfo = await collectModuleInfo(code, resolvedId);
 
-    if (redirectTo) {
-      // workerd always expects a leading `/` in absolute locations (like in mac and linux) windows absolute
-      // locations don't start with `/`, so in order not to confuse workerd we need to add one here before redirecting
-      const locationPrefix = `${process.platform === 'win32' ? '/' : ''}`;
-      const location = `${locationPrefix}${redirectTo}`;
-      return new Response(null, {
-        headers: { location },
-        status: 301,
-      });
-    }
+      let mod = {};
 
-    let code: string;
+      switch (moduleInfo.moduleType) {
+        case 'cjs':
+          mod = {
+            commonJsModule: code,
+            namedExports: moduleInfo.namedExports,
+          };
+          break;
+        case 'esm':
+          mod = {
+            esModule: code,
+          };
+          break;
+        case 'json':
+          mod = {
+            json: code,
+          };
+          break;
+      }
 
-    try {
-      code = await readFile(resolvedId, 'utf8');
-    } catch {
-      return new Response(`Failed to read file ${resolvedId}`, {
-        status: 404,
-      });
-    }
-
-    const moduleInfo = await collectModuleInfo(code, resolvedId);
-
-    let mod = {};
-
-    switch (moduleInfo.moduleType) {
-      case 'cjs':
-        mod = {
-          commonJsModule: code,
-          namedExports: moduleInfo.namedExports,
-        };
-        break;
-      case 'esm':
-        mod = {
-          esModule: code,
-        };
-        break;
-      case 'json':
-        mod = {
-          json: code,
-        };
-        break;
-    }
-
-    return new Response(
-      JSON.stringify({
-        // The name of the module has to never include a leading `/` (not even on mac/linux) so let's remove it
-        // (PS: I don't get this... is this a workerd bug?)
-        // (source: https://github.com/cloudflare/workerd/blob/442762b03/src/workerd/server/server.c%2B%2B#L2838-L2840)
-        name: specifier.replace(/^\//, ''),
-        ...mod,
-      }),
-    );
-  };
+      return new Response(
+        JSON.stringify({
+          name: specifier,
+          ...mod,
+        }),
+      );
+    },
+  );
 }
 
 /**
@@ -134,22 +115,12 @@ function extractModuleFallbackValues(request: Request): {
   const url = new URL(request.url);
 
   const extractPath = (
-    key: 'referrer' | 'specifier' | 'rawSpecifier',
-    isRaw: boolean = false,
+    key: 'resolveMethod' | 'referrer' | 'specifier' | 'rawSpecifier',
   ): string => {
-    const originalValue = url.searchParams.get(key);
-    if (!originalValue) {
+    const value = url.searchParams.get(key);
+    if (!value) {
       throw new Error(`no ${key} provided`);
     }
-
-    // workerd always adds a `/` to the absolute paths (raw values excluded) that is fine in OSes like mac and linux
-    // where absolute paths do start with `/` as well. But it is not ok in windows where absolute paths don't start
-    // with `/`, so for windows we need to remove the extra leading `/`
-    const value =
-      isRaw || process.platform !== 'win32'
-        ? originalValue
-        : originalValue.replace(/^\//, '');
-
     return value;
   };
 
@@ -157,15 +128,8 @@ function extractModuleFallbackValues(request: Request): {
     resolveMethod,
     referrer: extractPath('referrer'),
     specifier: extractPath('specifier'),
-    rawSpecifier: extractPath('rawSpecifier', true),
+    rawSpecifier: extractPath('rawSpecifier'),
   };
-}
-
-function getApproximateSpecifier(target: string, referrerDir: string): string {
-  let result = '';
-  if (/^(node|cloudflare|workerd):/.test(target)) result = target;
-  result = relative(referrerDir, target);
-  return result;
 }
 
 /**
@@ -209,4 +173,93 @@ async function withJsFileExtension(path: string): Promise<string> {
   }
 
   return path;
+}
+
+type ModuleFallbackHandler = (request: Request) => Promise<Response>;
+
+/**
+ * This function patches the values in and out of the workerd's module fallback service
+ *
+ * Fixing rough edges of how the module fallback works.
+ * Ideally all of the fixes in this functions could be fixed in workerd itself making this function
+ * unnecessary.
+ *
+ * @param handler the module fallback handler as it should be written (without ad-hoc path fixes)
+ * @returns the handler wrapped in a way to make it work as intended
+ */
+function patchModuleFallbackHandler(
+  handler: ModuleFallbackHandler,
+): ModuleFallbackHandler {
+  return async request => {
+    const url = new URL(request.url);
+
+    for (const pathName of ['referrer', 'specifier']) {
+      const path = url.searchParams.get(pathName);
+      if (path) {
+        // workerd always adds a `/` to the absolute paths (raw values excluded) that is fine in OSes like mac and linux
+        // where absolute paths do start with `/` as well. But it is not ok in windows where absolute paths don't start
+        // with `/`, so for windows we need to remove the extra leading `/`
+        //
+        // Either way this is an issue caused by workerd adding the leading `/`, if it were not to do that and simply return
+        // the correct path the path would not need fixing
+        //
+        const fixedPath =
+          process.platform !== 'win32' ? path : path.replace(/^\//, '');
+        url.searchParams.set(pathName, fixedPath);
+      }
+    }
+
+    const fixedRequest = new Request(url, {
+      headers: request.headers,
+    });
+
+    const response = await handler(fixedRequest);
+
+    if (response.status === 301) {
+      const location = response.headers.get('location');
+      if (!location) {
+        return response;
+      }
+
+      // on windows we have to add a leading `/` to the returned location, otherwise on next request the module fallback
+      // receives will contain an incorrect the specifier (created by concatenating the directory of the referred with the
+      // specifier) causing the module resolution to ultimately fail
+      //
+      // Why the incorrect specifier if the `/` is missing?
+      // My understanding (based on my very limited workerd knowledge) is that, as per this comment:
+      // https://github.com/cloudflare/workerd/blob/93953a/src/workerd/server/server.c%2B%2B#L2917-L2918
+      // the location returned to the module fallback service becomes the specifier that workerd tries to resolve next.
+      // Workerd, tries to resolve the module either as absolute or relative to the referrer:
+      // https://github.com/cloudflare/workerd/blob/93953aed/src/workerd/jsg/modules.c%2B%2B#L291
+      // based on whether the specifier path start with a `/` or not
+      // (https://github.com/capnproto/capnproto/blob/8b93996/c%2B%2B/src/kj/filesystem.h#L120-L131)
+      // this works as intended in operative systems where absolute paths do start with `/` but that's not the case
+      // in windows, so there we need to add the leading `/` to let workerd know that this is an absolute path.
+      // Note that on windows we remove leading `/`s to the specifier and referred (see above), adding the leading `/`
+      // here doesn't cause any issue for our handler.
+      const fixedLocation = `${process.platform === 'win32' ? '/' : ''}${location}`;
+      return new Response(null, {
+        headers: { location: fixedLocation },
+        status: 301,
+      });
+    }
+
+    if (response.status === 200) {
+      const respJson = (await response.json()) as Record<string, string>;
+      return Response.json({
+        ...respJson,
+        // The name of the module has to never include a leading `/` even if that's exactly the name of the specifier
+        // we got, so we need to remove potential leading `/`s
+        //
+        // Example:
+        //    As `specifier` we get:           '/Users/dario/Desktop/vite-environment-providers/node_modules/.pnpm/react@18.3.1/node_modules/react/cjs/react.development.js'
+        //    but the result name needs to be: 'Users/dario/Desktop/vite-environment-providers/node_modules/.pnpm/react@18.3.1/node_modules/react/cjs/react.development.js'
+        //
+        // (source: https://github.com/cloudflare/workerd/blob/442762b03/src/workerd/server/server.c%2B%2B#L2838-L2840)
+        name: respJson.name.replace(/^\//, ''),
+      });
+    }
+
+    return response;
+  };
 }
