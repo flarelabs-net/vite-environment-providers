@@ -2,6 +2,8 @@ const allowedPaths = new Set([
   '/require-ext',
   '/require-no-ext',
   '/require-json',
+  '/cloudflare-imports',
+
   '/third-party/react',
   '/third-party/remix',
   '/third-party/discord-api-types',

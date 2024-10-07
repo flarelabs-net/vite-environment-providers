@@ -14,8 +14,7 @@
     "declarationMap": true
   },
   "include": [
-    "entry-workerd.ts",
-    ".eslintrc.js",
+    "src",
   ],
   "exclude": ["src/client"]
 }
