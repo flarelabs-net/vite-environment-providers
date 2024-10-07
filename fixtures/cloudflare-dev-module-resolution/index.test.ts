@@ -31,3 +31,15 @@ describe('basic module resolution', () => {
     });
   });
 });
+
+describe('Cloudflare specific module resolution', () => {
+  test('imports from `cloudflare:*`', async () => {
+    const output = await fetchOutputFromViteDevServer('/cloudflare-imports');
+
+    expect(output).toEqual({
+      '(cloudflare:workers) WorkerEntrypoint.name': 'WorkerEntrypoint',
+      '(cloudflare:workers) DurableObject.name': 'DurableObjectBase',
+      '(cloudflare:sockets) typeof connect': 'function',
+    });
+  });
+});

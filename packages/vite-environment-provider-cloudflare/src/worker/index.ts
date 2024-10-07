@@ -75,6 +75,14 @@ async function getModuleRunner(env: Env) {
       root: env.ROOT,
       transport: {
         fetchModule: async (...args) => {
+          const moduleId = args[0];
+          if (moduleId.startsWith('cloudflare:')) {
+            return {
+              externalize: moduleId,
+              type: 'builtin',
+            };
+          }
+
           const response = await env.__viteFetchModule.fetch(
             new Request('http://localhost', {
               method: 'POST',
