@@ -1,3 +1,6 @@
+> [!WARNING]
+> This repository has been archived in favour of https://github.com/flarelabs-net/vite-plugin-cloudflare
+
 # Vite Environment Providers
 
 Experimentations based on the [_experimental_ Vite Environment API](https://deploy-preview-16471--vite-docs-main.netlify.app/guide/api-vite-environment.html) being worked on for `vite@6.0.0-alpha.x`
